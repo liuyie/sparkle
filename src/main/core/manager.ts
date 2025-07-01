@@ -69,7 +69,6 @@ export async function startCore(detached = false): Promise<Promise<void>[]> {
     disableEmbedCA = false,
     disableSystemCA = false,
     disableNftables = false,
-    skipSafePathCheck = false,
     safePaths = []
   } = await getAppConfig()
   const { 'log-level': logLevel } = await getControledMihomoConfig()
@@ -112,7 +111,6 @@ export async function startCore(detached = false): Promise<Promise<void>[]> {
     DISABLE_EMBED_CA: String(disableEmbedCA),
     DISABLE_SYSTEM_CA: String(disableSystemCA),
     DISABLE_NFTABLES: String(disableNftables),
-    SKIP_SAFE_PATH_CHECK: String(skipSafePathCheck),
     SAFE_PATHS: safePaths.join(path.delimiter)
   }
   let initialized = false
@@ -185,14 +183,15 @@ export async function startCore(detached = false): Promise<Promise<void>[]> {
                 providerNames.size > 0 && matchedProviders.size === providerNames.size
 
               if ((providerNames.size === 0 && isDefaultProvider) || isAllProvidersMatched) {
+                const delay = providerNames.size === 0 ? 100 : 500
                 initialized = true
                 Promise.all([
-                  new Promise((r) => setTimeout(r, 500)).then(() => {
+                  new Promise((r) => setTimeout(r, delay)).then(() => {
                     mainWindow?.webContents.send('groupsUpdated')
                     mainWindow?.webContents.send('rulesUpdated')
                   }),
                   uploadRuntimeConfig(),
-                  new Promise((r) => setTimeout(r, 500)).then(() =>
+                  new Promise((r) => setTimeout(r, delay)).then(() =>
                     patchMihomoConfig({ 'log-level': logLevel })
                   )
                 ]).then(() => resolve())
@@ -262,17 +261,11 @@ export async function quitWithoutCore(): Promise<void> {
 }
 
 async function checkProfile(): Promise<void> {
-  const {
-    core = 'mihomo',
-    diffWorkDir = false,
-    skipSafePathCheck = false,
-    safePaths = []
-  } = await getAppConfig()
+  const { core = 'mihomo', diffWorkDir = false, safePaths = [] } = await getAppConfig()
   const { current } = await getProfileConfig()
   const corePath = mihomoCorePath(core)
   const execFilePromise = promisify(execFile)
   const env = {
-    SKIP_SAFE_PATH_CHECK: String(skipSafePathCheck),
     SAFE_PATHS: safePaths.join(path.delimiter)
   }
   try {

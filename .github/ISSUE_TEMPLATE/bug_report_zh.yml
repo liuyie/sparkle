@@ -32,7 +32,7 @@ body:
     validations:
       required: true
   - attributes:
-      label: 发生问题 mihomo-party 版本
+      label: 发生问题 sparkle 版本
     type: input
     validations:
       required: true

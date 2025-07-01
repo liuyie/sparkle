@@ -355,17 +355,19 @@ const resolveSubstoreFrontend = async () => {
   console.log(`[INFO]: sub-store-frontend finished`)
 }
 const resolveFont = async () => {
-  const targetPath = path.join(cwd, 'src', 'renderer', 'src', 'assets', 'NotoColorEmoji.ttf')
+  // const targetPath = path.join(cwd, 'src', 'renderer', 'src', 'assets', 'NotoColorEmoji.ttf')
+  const targetPath = path.join(cwd, 'src', 'renderer', 'src', 'assets', 'twemoji.ttf')
 
   if (fs.existsSync(targetPath)) {
     return
   }
   await downloadFile(
-    'https://github.com/googlefonts/noto-emoji/raw/main/fonts/NotoColorEmoji.ttf',
+    // 'https://github.com/googlefonts/noto-emoji/raw/main/fonts/NotoColorEmoji.ttf',
+    'https://github.com/Sav22999/emoji/raw/refs/heads/master/font/twemoji.ttf',
     targetPath
   )
 
-  console.log(`[INFO]: NotoColorEmoji.ttf finished`)
+  console.log(`[INFO]: twemoji.ttf finished`)
 }
 
 const tasks = [

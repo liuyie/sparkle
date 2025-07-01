@@ -62,7 +62,7 @@ cd sparkle
 pnpm install
 ```
 
-3. **处理 Electron 安装问题**（如果遇到）
+3. **处理 Electron 安装问题**（如果遇到 pnpm dev 等命令无法成功运行）
 
 ```bash
 # 如果 Electron 没有正确安装，执行以下命令
@@ -209,24 +209,6 @@ pnpm --version
 
 ```bash
 node --version
-```
-
-#### Electron 安装问题
-
-如果遇到 Electron 下载失败或安装不完整：
-
-1. **手动安装 Electron**
-
-```bash
-cd node_modules/electron
-node install.js
-```
-
-2. **清理重装**
-
-```bash
-rm -rf node_modules
-pnpm install
 ```
 
 #### 开发环境问题

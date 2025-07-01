@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 @font-face {
-  font-family: 'Noto Color Emoji';
-  src: url('./NotoColorEmoji.ttf');
+  font-family: 'twemoji';
+  src: url('./twemoji.ttf');
 }
 
 .driver-popover {
@@ -91,7 +91,7 @@
     'Helvetica Neue',
     sans-serif,
     'Apple Color Emoji',
-    'Noto Color Emoji';
+    'twemoji';
 }
 
 .no-scrollbar::-webkit-scrollbar {

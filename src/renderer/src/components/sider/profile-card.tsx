@@ -231,6 +231,20 @@ const ProfileCard: React.FC<Props> = (props) => {
                   className={`${match ? 'text-primary-foreground' : 'text-foreground'} text-[24px]`}
                 />
               </Button>
+              <Button
+                isIconOnly
+                className="bg-transparent"
+                variant="flat"
+                color="default"
+                title="查看当前运行时配置"
+                onPress={() => {
+                  setShowRuntimeConfig(true)
+                }}
+              >
+                <CgLoadbarDoc
+                  className={`text-[24px] ${match ? 'text-primary-foreground' : 'text-foreground'}`}
+                />
+              </Button>
             </div>
           </CardBody>
           <CardFooter className="pt-1">

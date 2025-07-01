@@ -5,8 +5,11 @@ import path from 'path'
 import { getIcon } from 'file-icon-info'
 import { windowsDefaultIcon, darwinDefaultIcon } from './defaultIcon'
 import { app } from 'electron'
+import os from 'os'
+import crypto from 'crypto'
+import { exec } from 'child_process'
 
-function isIOSApp(appPath: string): boolean {
+export function isIOSApp(appPath: string): boolean {
   const appDir = appPath.endsWith('.app')
     ? appPath
     : appPath.includes('.app')
@@ -43,7 +46,7 @@ function hasMacOSAppIcon(appPath: string): boolean {
   }
 }
 
-function findBestAppPath(appPath: string): string | null {
+export function findBestAppPath(appPath: string): string | null {
   if (!appPath.includes('.app') && !appPath.includes('.xpc')) {
     return null
   }
@@ -192,8 +195,25 @@ export async function getIconDataURL(appPath: string): Promise<string> {
   if (process.platform === 'win32') {
     if (fs.existsSync(appPath) && /\.(exe|dll)$/i.test(appPath)) {
       try {
+        let targetPath = appPath
+        let tempLinkPath: string | null = null
+
+        if (/[\u4e00-\u9fff]/.test(appPath)) {
+          const tempDir = os.tmpdir()
+          const randomName = crypto.randomBytes(8).toString('hex')
+          const fileExt = path.extname(appPath)
+          tempLinkPath = path.join(tempDir, `${randomName}${fileExt}`)
+
+          try {
+            exec(`mklink "${tempLinkPath}" "${appPath}"`)
+            targetPath = tempLinkPath
+          } catch {
+            // ignore
+          }
+        }
+
         const iconBuffer = await new Promise<Buffer>((resolve, reject) => {
-          getIcon(appPath, (b64d) => {
+          getIcon(targetPath, (b64d) => {
             try {
               resolve(Buffer.from(b64d, 'base64'))
             } catch (err) {
@@ -201,6 +221,15 @@ export async function getIconDataURL(appPath: string): Promise<string> {
             }
           })
         })
+
+        if (tempLinkPath && fs.existsSync(tempLinkPath)) {
+          try {
+            fs.unlinkSync(tempLinkPath)
+          } catch {
+            // ignore
+          }
+        }
+
         return `data:image/png;base64,${iconBuffer.toString('base64')}`
       } catch {
         return windowsDefaultIcon

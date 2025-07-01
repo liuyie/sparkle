@@ -11,7 +11,7 @@ import {
   powerMonitor,
   ipcMain
 } from 'electron'
-import { addProfileItem, getAppConfig } from './config'
+import { addOverrideItem, addProfileItem, getAppConfig } from './config'
 import { quitWithoutCore, startCore, stopCore } from './core/manager'
 import { triggerSysProxy } from './sys/sysproxy'
 import icon from '../../resources/icon.png?asset'
@@ -124,6 +124,25 @@ export function setNotQuit(): void {
   notQuit = true
 }
 
+function showWindow(): number {
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) {
+      mainWindow.restore()
+    } else if (!mainWindow.isVisible()) {
+      mainWindow.show()
+    }
+    mainWindow.focusOnWebView()
+    mainWindow.setAlwaysOnTop(true, 'pop-up-menu')
+    mainWindow.focus()
+    mainWindow.setAlwaysOnTop(false)
+
+    if (!mainWindow.isMinimized()) {
+      return 100
+    }
+  }
+  return 500
+}
+
 function showQuitConfirmDialog(): Promise<boolean> {
   return new Promise((resolve) => {
     if (!mainWindow) {
@@ -131,28 +150,15 @@ function showQuitConfirmDialog(): Promise<boolean> {
       return
     }
 
-    if (mainWindow.isMinimized()) {
-      mainWindow.restore()
-    } else if (!mainWindow.isVisible()) {
-      mainWindow.show()
-    }
-
-    let timeout = 500
-    if (!mainWindow.isMinimized()) {
-      timeout = 100
-    }
-
+    const delay = showWindow()
     setTimeout(() => {
-      mainWindow?.setAlwaysOnTop(true, 'pop-up-menu')
-      mainWindow?.focus()
-      mainWindow?.setAlwaysOnTop(false)
       mainWindow?.webContents.send('show-quit-confirm')
       const handleQuitConfirm = (_event: Electron.IpcMainEvent, confirmed: boolean): void => {
         ipcMain.off('quit-confirm-result', handleQuitConfirm)
         resolve(confirmed)
       }
       ipcMain.once('quit-confirm-result', handleQuitConfirm)
-    }, timeout)
+    }, delay)
   })
 }
 
@@ -232,7 +238,8 @@ app.whenReady().then(async () => {
 })
 
 async function handleDeepLink(url: string): Promise<void> {
-  if (!url.startsWith('clash://') && !url.startsWith('mihomo://')) return
+  if (!url.startsWith('clash://') && !url.startsWith('mihomo://') && !url.startsWith('sparkle://'))
+    return
 
   const urlObj = new URL(url)
   switch (urlObj.host) {
@@ -243,26 +250,138 @@ async function handleDeepLink(url: string): Promise<void> {
         if (!profileUrl) {
           throw new Error('缺少参数 url')
         }
-        await addProfileItem({
-          type: 'remote',
-          name: profileName ?? undefined,
-          url: profileUrl
-        })
-        mainWindow?.webContents.send('profileConfigUpdated')
-        new Notification({ title: '订阅导入成功' }).show()
-        break
+
+        const confirmed = await showProfileInstallConfirm(profileUrl, profileName)
+
+        if (confirmed) {
+          await addProfileItem({
+            type: 'remote',
+            name: profileName ?? undefined,
+            url: profileUrl
+          })
+          mainWindow?.webContents.send('profileConfigUpdated')
+          new Notification({ title: '订阅导入成功' }).show()
+        }
       } catch (e) {
         dialog.showErrorBox('订阅导入失败', `${url}\n${e}`)
       }
+      break
+    }
+    case 'install-override': {
+      try {
+        const urlParam = urlObj.searchParams.get('url')
+        const profileName = urlObj.searchParams.get('name')
+        if (!urlParam) {
+          throw new Error('缺少参数 url')
+        }
+
+        const confirmed = await showOverrideInstallConfirm(urlParam, profileName)
+
+        if (confirmed) {
+          const url = new URL(urlParam)
+          const name = url.pathname.split('/').pop()
+          await addOverrideItem({
+            type: 'remote',
+            name: profileName ?? (name ? decodeURIComponent(name) : undefined),
+            url: urlParam,
+            ext: url.pathname.endsWith('.js') ? 'js' : 'yaml'
+          })
+          mainWindow?.webContents.send('overrideConfigUpdated')
+          new Notification({ title: '覆写导入成功' }).show()
+        }
+      } catch (e) {
+        dialog.showErrorBox('覆写导入失败', `${url}\n${e}`)
+      }
+      break
     }
   }
+}
+
+async function showProfileInstallConfirm(url: string, name?: string | null): Promise<boolean> {
+  if (!mainWindow) {
+    return false
+  }
+  let extractedName = name
+
+  if (!extractedName) {
+    try {
+      const { userAgent } = await getAppConfig()
+      const axios = (await import('axios')).default
+      const response = await axios.head(url, {
+        headers: {
+          'User-Agent': userAgent || 'clash.meta/alpha-de19f92'
+        },
+        timeout: 5000
+      })
+
+      if (response.headers['content-disposition']) {
+        extractedName = parseFilename(response.headers['content-disposition'])
+      }
+    } catch (error) {
+      // ignore
+    }
+  }
+
+  return new Promise((resolve) => {
+    const delay = showWindow()
+    setTimeout(() => {
+      mainWindow?.webContents.send('show-profile-install-confirm', {
+        url,
+        name: extractedName || name
+      })
+      const handleConfirm = (_event: Electron.IpcMainEvent, confirmed: boolean): void => {
+        ipcMain.off('profile-install-confirm-result', handleConfirm)
+        resolve(confirmed)
+      }
+      ipcMain.once('profile-install-confirm-result', handleConfirm)
+    }, delay)
+  })
+}
+
+function parseFilename(str: string): string {
+  if (str.match(/filename\*=.*''/)) {
+    const filename = decodeURIComponent(str.split(/filename\*=.*''/)[1])
+    return filename
+  } else {
+    const filename = str.split('filename=')[1]
+    return filename?.replace(/"/g, '') || ''
+  }
+}
+
+function showOverrideInstallConfirm(url: string, name?: string | null): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (!mainWindow) {
+      resolve(false)
+      return
+    }
+
+    let finalName = name
+    if (!finalName) {
+      const urlObj = new URL(url)
+      const pathName = urlObj.pathname.split('/').pop()
+      finalName = pathName ? decodeURIComponent(pathName) : undefined
+    }
+
+    const delay = showWindow()
+    setTimeout(() => {
+      mainWindow?.webContents.send('show-override-install-confirm', {
+        url,
+        name: finalName
+      })
+      const handleConfirm = (_event: Electron.IpcMainEvent, confirmed: boolean): void => {
+        ipcMain.off('override-install-confirm-result', handleConfirm)
+        resolve(confirmed)
+      }
+      ipcMain.once('override-install-confirm-result', handleConfirm)
+    }, delay)
+  })
 }
 
 export async function createWindow(): Promise<void> {
   const { useWindowFrame = false } = await getAppConfig()
   const mainWindowState = windowStateKeeper({
     defaultWidth: 800,
-    defaultHeight: 600,
+    defaultHeight: 700,
     file: 'window-state.json'
   })
   // https://github.com/electron/electron/issues/16521#issuecomment-582955104

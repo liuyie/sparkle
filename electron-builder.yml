@@ -23,6 +23,7 @@ protocols:
   schemes:
     - 'clash'
     - 'mihomo'
+    - 'sparkle'
 win:
   target:
     - nsis
@@ -56,7 +57,7 @@ linux:
   desktop:
     entry:
       Name: Sparkle
-      MimeType: 'x-scheme-handler/clash;x-scheme-handler/mihomo'
+      MimeType: 'x-scheme-handler/clash;x-scheme-handler/mihomo;x-scheme-handler/sparkle'
   target:
     - deb
     - rpm

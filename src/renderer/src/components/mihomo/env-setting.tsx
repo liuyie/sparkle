@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import SettingCard from '../base/base-setting-card'
 import SettingItem from '../base/base-setting-item'
-import { Button, Divider, Switch } from '@heroui/react'
+import { Button, Switch } from '@heroui/react'
 import { useAppConfig } from '@renderer/hooks/use-app-config'
 import { restartCore } from '@renderer/utils/ipc'
 import EditableList from '../base/base-list-editor'
@@ -14,7 +14,6 @@ const EnvSetting: React.FC = () => {
     disableEmbedCA,
     disableSystemCA,
     disableNftables,
-    skipSafePathCheck,
     safePaths = []
   } = appConfig || {}
   const handleConfigChangeWithRestart = async (key: string, value: unknown): Promise<void> => {
@@ -69,38 +68,24 @@ const EnvSetting: React.FC = () => {
           />
         </SettingItem>
       )}
-      <SettingItem title="禁用可信路径检查">
-        <Switch
-          size="sm"
-          isSelected={skipSafePathCheck}
-          onValueChange={(v) => {
-            handleConfigChangeWithRestart('skipSafePathCheck', v)
-          }}
-        />
+      <SettingItem title="可信路径">
+        {safePathsInput.join('') != safePaths.join('') && (
+          <Button
+            size="sm"
+            color="primary"
+            onPress={() => {
+              handleConfigChangeWithRestart('safePaths', safePathsInput)
+            }}
+          >
+            确认
+          </Button>
+        )}
       </SettingItem>
-      {!skipSafePathCheck && (
-        <>
-          <Divider className="mt-2 mb-2" />
-          <SettingItem title="可信路径">
-            {safePathsInput.join('') != safePaths.join('') && (
-              <Button
-                size="sm"
-                color="primary"
-                onPress={() => {
-                  handleConfigChangeWithRestart('safePaths', safePathsInput)
-                }}
-              >
-                确认
-              </Button>
-            )}
-          </SettingItem>
-          <EditableList
-            items={safePathsInput}
-            onChange={(items) => setSafePathsInput(items as string[])}
-            divider={false}
-          />
-        </>
-      )}
+      <EditableList
+        items={safePathsInput}
+        onChange={(items) => setSafePathsInput(items as string[])}
+        divider={false}
+      />{' '}
     </SettingCard>
   )
 }

@@ -235,10 +235,12 @@ function initDeeplink(): void {
     if (process.argv.length >= 2) {
       app.setAsDefaultProtocolClient('clash', process.execPath, [path.resolve(process.argv[1])])
       app.setAsDefaultProtocolClient('mihomo', process.execPath, [path.resolve(process.argv[1])])
+      app.setAsDefaultProtocolClient('sparkle', process.execPath, [path.resolve(process.argv[1])])
     }
   } else {
     app.setAsDefaultProtocolClient('clash')
     app.setAsDefaultProtocolClient('mihomo')
+    app.setAsDefaultProtocolClient('sparkle')
   }
 }
 
@@ -250,7 +252,7 @@ export async function init(): Promise<void> {
   await cleanup()
   await startSubStoreFrontendServer()
   await startSubStoreBackendServer()
-  const { sysProxy, onlyActiveDevice = false, networkDetection = true } = await getAppConfig()
+  const { sysProxy, onlyActiveDevice = false, networkDetection = false } = await getAppConfig()
   if (networkDetection) {
     await startNetworkDetection()
   }

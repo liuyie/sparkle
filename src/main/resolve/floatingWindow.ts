@@ -7,6 +7,7 @@ import { applyTheme } from './theme'
 import { buildContextMenu, showTrayIcon } from './tray'
 
 export let floatingWindow: BrowserWindow | null = null
+let triggerTimeoutRef: NodeJS.Timeout | null = null
 
 async function preallocateGpuResources(): Promise<void> {
   const preallocWin = new BrowserWindow({
@@ -88,12 +89,20 @@ export async function showFloatingWindow(): Promise<void> {
 }
 
 export async function triggerFloatingWindow(): Promise<void> {
+  if (triggerTimeoutRef) {
+    clearTimeout(triggerTimeoutRef)
+    triggerTimeoutRef = null
+  }
+
   if (floatingWindow?.isVisible()) {
     await patchAppConfig({ showFloatingWindow: false })
     await closeFloatingWindow()
   } else {
-    await patchAppConfig({ showFloatingWindow: true })
     await showFloatingWindow()
+    triggerTimeoutRef = setTimeout(async () => {
+      await patchAppConfig({ showFloatingWindow: true })
+      triggerTimeoutRef = null
+    }, 1000)
   }
 }
 

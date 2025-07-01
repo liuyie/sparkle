@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import SettingCard from '../base/base-setting-card'
 import SettingItem from '../base/base-setting-item'
-import { Button, Select, SelectItem, Switch, Tab, Tabs } from '@heroui/react'
+import { Button, Select, SelectItem, Switch, Tab, Tabs, Tooltip } from '@heroui/react'
 import { BiSolidFileImport } from 'react-icons/bi'
 import {
   applyTheme,
@@ -20,7 +20,7 @@ import {
 import { useAppConfig } from '@renderer/hooks/use-app-config'
 import { platform } from '@renderer/utils/init'
 import { useTheme } from 'next-themes'
-import { IoMdCloudDownload } from 'react-icons/io'
+import { IoIosHelpCircle, IoMdCloudDownload } from 'react-icons/io'
 import { MdEditDocument } from 'react-icons/md'
 import CSSEditorModal from './css-editor-modal'
 
@@ -40,13 +40,24 @@ const AppearanceConfig: React.FC = () => {
     useWindowFrame = false,
     customTheme = 'default.css',
     appTheme = 'system',
-    displayIcon = true
+    displayIcon = true,
+    displayAppName = true
   } = appConfig || {}
+  const [localShowFloating, setLocalShowFloating] = useState(showFloating)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     resolveThemes().then((themes) => {
       setCustomThemes(themes)
     })
+  }, [])
+
+  useEffect(() => {
+    return (): void => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+    }
   }, [])
 
   return (
@@ -69,25 +80,60 @@ const AppearanceConfig: React.FC = () => {
             isSelected={displayIcon}
             onValueChange={(v) => {
               patchAppConfig({ displayIcon: v })
-            }}
-          />
-        </SettingItem>
-        <SettingItem title="显示悬浮窗" divider>
-          <Switch
-            size="sm"
-            isSelected={showFloating}
-            onValueChange={async (v) => {
-              await patchAppConfig({ showFloatingWindow: v })
-              if (v) {
-                showFloatingWindow()
-              } else {
-                closeFloatingWindow()
+              if (!v) {
+                patchAppConfig({ displayAppName: false })
               }
             }}
           />
         </SettingItem>
+        {displayIcon && (
+          <SettingItem title="连接显示应用名称" divider>
+            <Switch
+              size="sm"
+              isSelected={displayAppName}
+              onValueChange={(v) => {
+                patchAppConfig({ displayAppName: v })
+              }}
+            />
+          </SettingItem>
+        )}
+        <SettingItem
+          title="显示悬浮窗"
+          actions={
+            <Tooltip content="未禁用GPU加速的情况下，悬浮窗可能会导致应用崩溃">
+              <Button isIconOnly size="sm" variant="light">
+                <IoIosHelpCircle className="text-lg" />
+              </Button>
+            </Tooltip>
+          }
+          divider
+        >
+          <Switch
+            size="sm"
+            isSelected={localShowFloating}
+            onValueChange={async (v) => {
+              if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current)
+                timeoutRef.current = null
+              }
 
-        {showFloating && (
+              setLocalShowFloating(v)
+              if (v) {
+                await showFloatingWindow()
+                timeoutRef.current = setTimeout(async () => {
+                  if (localShowFloating) {
+                    await patchAppConfig({ showFloatingWindow: v })
+                  }
+                  timeoutRef.current = null
+                }, 1000)
+              } else {
+                patchAppConfig({ showFloatingWindow: v })
+                await closeFloatingWindow()
+              }
+            }}
+          />
+        </SettingItem>
+        {localShowFloating && (
           <>
             <SettingItem title="根据网速旋转悬浮窗图标" divider>
               <Switch

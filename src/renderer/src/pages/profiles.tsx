@@ -235,6 +235,7 @@ const Profiles: React.FC = () => {
                   size="sm"
                   isIconOnly
                   variant="light"
+                  className="z-10"
                   onPress={() => {
                     navigator.clipboard.readText().then((text) => {
                       setUrl(text)

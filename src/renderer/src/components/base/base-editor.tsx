@@ -153,7 +153,7 @@ export const BaseEditor: React.FC<Props> = (props) => {
     folding: true, // 启用代码折叠
     scrollBeyondLastLine: false, // 禁止滚动超过最后一行
     automaticLayout: true, // 自动布局
-    wordWrap: 'on' as 'on' | 'off', // 自动换行x
+    wordWrap: 'on' as 'on' | 'off', // 自动换行 x
     // 禁用动画时的性能优化选项
     cursorBlinking: (disableAnimation ? 'solid' : 'blink') as 'solid' | 'blink', // 禁用光标闪烁动画
     cursorSmoothCaretAnimation: (disableAnimation ? 'off' : 'on') as 'off' | 'on', // 禁用光标移动动画

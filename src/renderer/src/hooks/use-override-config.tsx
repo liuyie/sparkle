@@ -1,4 +1,4 @@
-import React, { createContext, useContext, ReactNode } from 'react'
+import React, { createContext, useContext, ReactNode, useEffect } from 'react'
 import useSWR from 'swr'
 import {
   getOverrideConfig,
@@ -63,6 +63,15 @@ export const OverrideConfigProvider: React.FC<{ children: ReactNode }> = ({ chil
       mutateOverrideConfig()
     }
   }
+
+  useEffect(() => {
+    window.electron.ipcRenderer.on('overrideConfigUpdated', () => {
+      mutateOverrideConfig()
+    })
+    return (): void => {
+      window.electron.ipcRenderer.removeAllListeners('overrideConfigUpdated')
+    }
+  }, [])
 
   return (
     <OverrideConfigContext.Provider

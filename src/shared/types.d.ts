@@ -284,7 +284,6 @@ interface IAppConfig {
   disableEmbedCA: boolean
   disableSystemCA: boolean
   disableNftables: boolean
-  skipSafePathCheck: boolean
   safePaths: string[]
   proxyDisplayMode: 'simple' | 'full'
   proxyDisplayOrder: 'default' | 'delay' | 'name'
@@ -364,6 +363,7 @@ interface IAppConfig {
   networkDetectionBypass?: string[]
   networkDetectionInterval?: number
   displayIcon?: boolean
+  displayAppName?: boolean
   disableGPU: boolean
   disableAnimation?: boolean
 }

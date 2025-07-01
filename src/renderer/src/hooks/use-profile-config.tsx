@@ -1,4 +1,4 @@
-import React, { createContext, useContext, ReactNode } from 'react'
+import React, { createContext, useContext, ReactNode, useEffect } from 'react'
 import useSWR from 'swr'
 import {
   getProfileConfig,
@@ -81,7 +81,7 @@ export const ProfileConfigProvider: React.FC<{ children: ReactNode }> = ({ child
     }
   }
 
-  React.useEffect(() => {
+  useEffect(() => {
     window.electron.ipcRenderer.on('profileConfigUpdated', () => {
       mutateProfileConfig()
     })
