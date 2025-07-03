@@ -129,7 +129,7 @@ const ConnectionItemComponent: React.FC<Props> = ({
                 </Chip>
                 {hasSpeed && (
                   <Chip color="primary" size="sm" radius="sm" variant="bordered">
-                    ↑ {uploadSpeed}/s ↓ {downloadSpeed}/s
+                    ↑ {uploadSpeed || '0 B'}/s ↓ {downloadSpeed || '0 B'}/s
                   </Chip>
                 )}
               </div>
