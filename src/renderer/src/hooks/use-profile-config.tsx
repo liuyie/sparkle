@@ -10,11 +10,11 @@ import {
 } from '@renderer/utils/ipc'
 
 interface ProfileConfigContextType {
-  profileConfig: IProfileConfig | undefined
-  setProfileConfig: (config: IProfileConfig) => Promise<void>
+  profileConfig: ProfileConfig | undefined
+  setProfileConfig: (config: ProfileConfig) => Promise<void>
   mutateProfileConfig: () => void
-  addProfileItem: (item: Partial<IProfileItem>) => Promise<void>
-  updateProfileItem: (item: IProfileItem) => Promise<void>
+  addProfileItem: (item: Partial<ProfileItem>) => Promise<void>
+  updateProfileItem: (item: ProfileItem) => Promise<void>
   removeProfileItem: (id: string) => Promise<void>
   changeCurrentProfile: (id: string) => Promise<void>
 }
@@ -26,7 +26,7 @@ export const ProfileConfigProvider: React.FC<{ children: ReactNode }> = ({ child
     getProfileConfig()
   )
 
-  const setProfileConfig = async (config: IProfileConfig): Promise<void> => {
+  const setProfileConfig = async (config: ProfileConfig): Promise<void> => {
     try {
       await set(config)
     } catch (e) {
@@ -37,7 +37,7 @@ export const ProfileConfigProvider: React.FC<{ children: ReactNode }> = ({ child
     }
   }
 
-  const addProfileItem = async (item: Partial<IProfileItem>): Promise<void> => {
+  const addProfileItem = async (item: Partial<ProfileItem>): Promise<void> => {
     try {
       await add(item)
     } catch (e) {
@@ -59,7 +59,7 @@ export const ProfileConfigProvider: React.FC<{ children: ReactNode }> = ({ child
     }
   }
 
-  const updateProfileItem = async (item: IProfileItem): Promise<void> => {
+  const updateProfileItem = async (item: ProfileItem): Promise<void> => {
     try {
       await update(item)
     } catch (e) {

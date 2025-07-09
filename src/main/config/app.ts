@@ -5,9 +5,9 @@ import { deepMerge } from '../utils/merge'
 import { defaultConfig } from '../utils/template'
 import { readFileSync } from 'fs'
 
-let appConfig: IAppConfig // config.yaml
+let appConfig: AppConfig // config.yaml
 
-export async function getAppConfig(force = false): Promise<IAppConfig> {
+export async function getAppConfig(force = false): Promise<AppConfig> {
   if (force || !appConfig) {
     const data = await readFile(appConfigPath(), 'utf-8')
     appConfig = yaml.parse(data, { merge: true }) || defaultConfig
@@ -16,15 +16,15 @@ export async function getAppConfig(force = false): Promise<IAppConfig> {
   return appConfig
 }
 
-export async function patchAppConfig(patch: Partial<IAppConfig>): Promise<void> {
+export async function patchAppConfig(patch: Partial<AppConfig>): Promise<void> {
   appConfig = deepMerge(appConfig, patch)
   await writeFile(appConfigPath(), yaml.stringify(appConfig))
 }
 
-export function getAppConfigSync(): IAppConfig {
+export function getAppConfigSync(): AppConfig {
   try {
     const raw = readFileSync(appConfigPath(), 'utf-8')
-    const data = yaml.parse(raw, { merge: true }) as IAppConfig
+    const data = yaml.parse(raw, { merge: true }) as AppConfig
     if (typeof data === 'object' && data !== null) {
       return data
     }

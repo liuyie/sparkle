@@ -3,9 +3,9 @@ import useSWR from 'swr'
 import { getAppConfig, patchAppConfig as patch } from '@renderer/utils/ipc'
 
 interface AppConfigContextType {
-  appConfig: IAppConfig | undefined
+  appConfig: AppConfig | undefined
   mutateAppConfig: () => void
-  patchAppConfig: (value: Partial<IAppConfig>) => Promise<void>
+  patchAppConfig: (value: Partial<AppConfig>) => Promise<void>
 }
 
 const AppConfigContext = createContext<AppConfigContextType | undefined>(undefined)
@@ -13,7 +13,7 @@ const AppConfigContext = createContext<AppConfigContextType | undefined>(undefin
 export const AppConfigProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { data: appConfig, mutate: mutateAppConfig } = useSWR('getConfig', () => getAppConfig())
 
-  const patchAppConfig = async (value: Partial<IAppConfig>): Promise<void> => {
+  const patchAppConfig = async (value: Partial<AppConfig>): Promise<void> => {
     try {
       await patch(value)
     } catch (e) {

@@ -20,9 +20,9 @@ import { openFile, restartCore } from '@renderer/utils/ipc'
 import ConfirmModal from '../base/base-confirm'
 
 interface Props {
-  info: IOverrideItem
-  addOverrideItem: (item: Partial<IOverrideItem>) => Promise<void>
-  updateOverrideItem: (item: IOverrideItem) => Promise<void>
+  info: OverrideItem
+  addOverrideItem: (item: Partial<OverrideItem>) => Promise<void>
+  updateOverrideItem: (item: OverrideItem) => Promise<void>
   removeOverrideItem: (id: string) => Promise<void>
   mutateOverrideConfig: () => void
 }

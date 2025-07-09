@@ -24,10 +24,10 @@ import { useAppConfig } from '@renderer/hooks/use-app-config'
 import ConfirmModal from '../base/base-confirm'
 
 interface Props {
-  info: IProfileItem
+  info: ProfileItem
   isCurrent: boolean
-  addProfileItem: (item: Partial<IProfileItem>) => Promise<void>
-  updateProfileItem: (item: IProfileItem) => Promise<void>
+  addProfileItem: (item: Partial<ProfileItem>) => Promise<void>
+  updateProfileItem: (item: ProfileItem) => Promise<void>
   removeProfileItem: (id: string) => Promise<void>
   mutateProfileConfig: () => void
   onClick: () => Promise<void>

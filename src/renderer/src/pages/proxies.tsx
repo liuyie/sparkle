@@ -40,7 +40,7 @@ const Proxies: React.FC = () => {
   const virtuosoRef = useRef<GroupedVirtuosoHandle>(null)
   const { groupCounts, allProxies } = useMemo(() => {
     const groupCounts: number[] = []
-    const allProxies: (IMihomoProxy | IMihomoGroup)[][] = []
+    const allProxies: (ControllerProxiesDetail | ControllerGroupDetail)[][] = []
     if (groups.length !== searchValue.length) setSearchValue(Array(groups.length).fill(''))
     groups.forEach((group, index) => {
       if (isOpen[index]) {
@@ -81,9 +81,12 @@ const Proxies: React.FC = () => {
     [autoCloseConnection, mutate]
   )
 
-  const onProxyDelay = useCallback(async (proxy: string, url?: string): Promise<IMihomoDelay> => {
-    return await mihomoProxyDelay(proxy, url)
-  }, [])
+  const onProxyDelay = useCallback(
+    async (proxy: string, url?: string): Promise<ControllerProxiesDelay> => {
+      return await mihomoProxyDelay(proxy, url)
+    },
+    []
+  )
 
   const onGroupDelay = useCallback(
     async (index: number): Promise<void> => {

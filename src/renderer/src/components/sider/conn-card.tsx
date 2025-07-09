@@ -83,7 +83,7 @@ const ConnCard: React.FC<Props> = (props) => {
   const transform = tf ? { x: tf.x, y: tf.y, scaleX: 1, scaleY: 1 } : null
 
   const handleTraffic = useCallback(
-    async (_e: unknown, info: IMihomoTrafficInfo) => {
+    async (_e: unknown, info: ControllerTraffic) => {
       setUpload(info.up)
       setDownload(info.down)
       mihomoConfig().then((config) => setInterfaceName(config['interface-name']))

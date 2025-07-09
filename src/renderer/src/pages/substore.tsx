@@ -57,7 +57,7 @@ const SubStore: React.FC = () => {
                   await getPort()
                   new Notification('Sub-Store 更新完成')
                 } catch (e) {
-                  new Notification(`Sub-Store 更新失败: ${e}`)
+                  new Notification(`Sub-Store 更新失败：${e}`)
                 } finally {
                   setIsUpdating(false)
                 }

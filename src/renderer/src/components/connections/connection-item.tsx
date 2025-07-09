@@ -6,12 +6,12 @@ import { CgClose, CgTrash } from 'react-icons/cg'
 
 interface Props {
   index: number
-  info: IMihomoConnectionDetail
+  info: ControllerConnectionDetail
   displayIcon?: boolean
   iconUrl: string
   displayName?: string
-  selected: IMihomoConnectionDetail | undefined
-  setSelected: React.Dispatch<React.SetStateAction<IMihomoConnectionDetail | undefined>>
+  selected: ControllerConnectionDetail | undefined
+  setSelected: React.Dispatch<React.SetStateAction<ControllerConnectionDetail | undefined>>
   setIsDetailModalOpen: React.Dispatch<React.SetStateAction<boolean>>
   close: (id: string) => void
 }

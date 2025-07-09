@@ -7,7 +7,7 @@ const colorMap = {
   info: 'primary',
   debug: 'default'
 }
-const LogItem: React.FC<IMihomoLogInfo & { index: number }> = (props) => {
+const LogItem: React.FC<ControllerLog & { index: number }> = (props) => {
   const { type, payload, time, index } = props
   return (
     <div className={`px-2 pb-2 ${index === 0 ? 'pt-2' : ''}`}>

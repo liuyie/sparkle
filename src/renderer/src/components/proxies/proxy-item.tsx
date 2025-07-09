@@ -5,10 +5,10 @@ import { FaMapPin } from 'react-icons/fa6'
 
 interface Props {
   mutateProxies: () => void
-  onProxyDelay: (proxy: string, url?: string) => Promise<IMihomoDelay>
+  onProxyDelay: (proxy: string, url?: string) => Promise<ControllerProxiesDelay>
   proxyDisplayMode: 'simple' | 'full'
-  proxy: IMihomoProxy | IMihomoGroup
-  group: IMihomoMixedGroup
+  proxy: ControllerProxiesDetail | ControllerGroupDetail
+  group: ControllerMixedGroup
   onSelect: (group: string, proxy: string) => void
   selected: boolean
 }

@@ -27,7 +27,7 @@ const AdvancedSetting: React.FC = () => {
   const [idleInput, setIdleInput] = useState(idle)
   const [intervalInput, setIntervalInput] = useState(interval)
 
-  const onChangeNeedRestart = async (patch: Partial<IMihomoConfig>): Promise<void> => {
+  const onChangeNeedRestart = async (patch: Partial<MihomoConfig>): Promise<void> => {
     await patchControledMihomoConfig(patch)
     await restartCore()
   }

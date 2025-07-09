@@ -3,14 +3,14 @@ import useSWR from 'swr'
 import { mihomoGroups } from '@renderer/utils/ipc'
 
 interface GroupsContextType {
-  groups: IMihomoMixedGroup[] | undefined
+  groups: ControllerMixedGroup[] | undefined
   mutate: () => void
 }
 
 const GroupsContext = createContext<GroupsContextType | undefined>(undefined)
 
 export const GroupsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const { data: groups, mutate } = useSWR<IMihomoMixedGroup[]>('mihomoGroups', mihomoGroups, {
+  const { data: groups, mutate } = useSWR<ControllerMixedGroup[]>('mihomoGroups', mihomoGroups, {
     errorRetryInterval: 200,
     errorRetryCount: 10
   })

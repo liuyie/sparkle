@@ -40,7 +40,7 @@ const MihomoCoreCard: React.FC<Props> = (props) => {
     const token = PubSub.subscribe('mihomo-core-changed', () => {
       mutate()
     })
-    window.electron.ipcRenderer.on('mihomoMemory', (_e, info: IMihomoMemoryInfo) => {
+    window.electron.ipcRenderer.on('mihomoMemory', (_e, info: ControllerMemory) => {
       setMem(info.inuse)
     })
     return (): void => {

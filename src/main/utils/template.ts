@@ -1,6 +1,6 @@
 import os from 'os'
 
-export const defaultConfig: IAppConfig = {
+export const defaultConfig: AppConfig = {
   core: 'mihomo',
   updateChannel: 'stable',
   silentStart: false,
@@ -44,7 +44,7 @@ export const defaultConfig: IAppConfig = {
   disableGPU: process.platform === 'win32' && parseInt(os.release().split('.')[2], 10) <= 20000
 }
 
-export const defaultControledMihomoConfig: Partial<IMihomoConfig> = {
+export const defaultControledMihomoConfig: Partial<MihomoConfig> = {
   'external-controller': '',
   'external-ui': '',
   'external-ui-url': 'https://github.com/Zephyruso/zashboard/releases/latest/download/dist.zip',
@@ -52,6 +52,7 @@ export const defaultControledMihomoConfig: Partial<IMihomoConfig> = {
     'allow-origins': ['https://metacubex.github.io', 'https://board.zash.run.place'],
     'allow-private-network': false
   },
+  secret: '',
   ipv6: true,
   mode: 'rule',
   'mixed-port': 7890,
@@ -138,15 +139,15 @@ export const defaultControledMihomoConfig: Partial<IMihomoConfig> = {
   }
 }
 
-export const defaultProfileConfig: IProfileConfig = {
+export const defaultProfileConfig: ProfileConfig = {
   items: []
 }
 
-export const defaultOverrideConfig: IOverrideConfig = {
+export const defaultOverrideConfig: OverrideConfig = {
   items: []
 }
 
-export const defaultProfile: Partial<IMihomoConfig> = {
+export const defaultProfile: Partial<MihomoConfig> = {
   proxies: [],
   'proxy-groups': [],
   rules: []

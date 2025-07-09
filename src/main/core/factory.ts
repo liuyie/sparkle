@@ -26,7 +26,7 @@ let runtimeConfigStr: string,
   rawProfileStr: string,
   currentProfileStr: string,
   overrideProfileStr: string,
-  runtimeConfig: IMihomoConfig
+  runtimeConfig: MihomoConfig
 
 export async function generateProfile(): Promise<void> {
   const { current } = await getProfileConfig()
@@ -76,8 +76,8 @@ async function prepareProfileWorkDir(current: string | undefined): Promise<void>
 
 async function overrideProfile(
   current: string | undefined,
-  profile: IMihomoConfig
-): Promise<IMihomoConfig> {
+  profile: MihomoConfig
+): Promise<MihomoConfig> {
   const { items = [] } = (await getOverrideConfig()) || {}
   const globalOverride = items.filter((item) => item.global).map((item) => item.id)
   const { override = [] } = (await getProfileItem(current)) || {}
@@ -100,10 +100,10 @@ async function overrideProfile(
 }
 
 async function runOverrideScript(
-  profile: IMihomoConfig,
+  profile: MihomoConfig,
   script: string,
-  item: IOverrideItem
-): Promise<IMihomoConfig> {
+  item: OverrideItem
+): Promise<MihomoConfig> {
   const log = (type: string, data: string, flag = 'a'): void => {
     writeFileSync(overridePath(item.id, 'log'), `[${type}] ${data}\n`, {
       encoding: 'utf-8',
@@ -177,6 +177,6 @@ export async function getOverrideProfileStr(): Promise<string> {
   return overrideProfileStr
 }
 
-export async function getRuntimeConfig(): Promise<IMihomoConfig> {
+export async function getRuntimeConfig(): Promise<MihomoConfig> {
   return runtimeConfig
 }

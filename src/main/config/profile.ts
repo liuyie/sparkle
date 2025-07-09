@@ -12,9 +12,9 @@ import { subStorePort } from '../resolve/server'
 import { dirname, join } from 'path'
 import { deepMerge } from '../utils/merge'
 
-let profileConfig: IProfileConfig // profile.yaml
+let profileConfig: ProfileConfig // profile.yaml
 
-export async function getProfileConfig(force = false): Promise<IProfileConfig> {
+export async function getProfileConfig(force = false): Promise<ProfileConfig> {
   if (force || !profileConfig) {
     const data = await readFile(profileConfigPath(), 'utf-8')
     profileConfig = yaml.parse(data, { merge: true }) || { items: [] }
@@ -23,12 +23,12 @@ export async function getProfileConfig(force = false): Promise<IProfileConfig> {
   return profileConfig
 }
 
-export async function setProfileConfig(config: IProfileConfig): Promise<void> {
+export async function setProfileConfig(config: ProfileConfig): Promise<void> {
   profileConfig = config
   await writeFile(profileConfigPath(), yaml.stringify(config), 'utf-8')
 }
 
-export async function getProfileItem(id: string | undefined): Promise<IProfileItem | undefined> {
+export async function getProfileItem(id: string | undefined): Promise<ProfileItem | undefined> {
   const { items } = await getProfileConfig()
   if (!id || id === 'default') return { id: 'default', type: 'local', name: '空白订阅' }
   return items.find((item) => item.id === id)
@@ -49,7 +49,7 @@ export async function changeCurrentProfile(id: string): Promise<void> {
   }
 }
 
-export async function updateProfileItem(item: IProfileItem): Promise<void> {
+export async function updateProfileItem(item: ProfileItem): Promise<void> {
   const config = await getProfileConfig()
   const index = config.items.findIndex((i) => i.id === item.id)
   if (index === -1) {
@@ -59,7 +59,7 @@ export async function updateProfileItem(item: IProfileItem): Promise<void> {
   await setProfileConfig(config)
 }
 
-export async function addProfileItem(item: Partial<IProfileItem>): Promise<void> {
+export async function addProfileItem(item: Partial<ProfileItem>): Promise<void> {
   const newItem = await createProfile(item)
   const config = await getProfileConfig()
   if (await getProfileItem(newItem.id)) {
@@ -100,12 +100,12 @@ export async function removeProfileItem(id: string): Promise<void> {
   await delProfileUpdater(id)
 }
 
-export async function getCurrentProfileItem(): Promise<IProfileItem> {
+export async function getCurrentProfileItem(): Promise<ProfileItem> {
   const { current } = await getProfileConfig()
   return (await getProfileItem(current)) || { id: 'default', type: 'local', name: '空白订阅' }
 }
 
-export async function createProfile(item: Partial<IProfileItem>): Promise<IProfileItem> {
+export async function createProfile(item: Partial<ProfileItem>): Promise<ProfileItem> {
   const id = item.id || new Date().getTime().toString(16)
   const newItem = {
     id,
@@ -117,7 +117,7 @@ export async function createProfile(item: Partial<IProfileItem>): Promise<IProfi
     override: item.override || [],
     useProxy: item.useProxy || false,
     updated: new Date().getTime()
-  } as IProfileItem
+  } as ProfileItem
   switch (newItem.type) {
     case 'remote': {
       const { userAgent } = await getAppConfig()
@@ -207,7 +207,7 @@ export async function setProfileStr(id: string, content: string): Promise<void> 
   if (current === id) await restartCore()
 }
 
-export async function getProfile(id: string | undefined): Promise<IMihomoConfig> {
+export async function getProfile(id: string | undefined): Promise<MihomoConfig> {
   const profile = await getProfileStr(id)
   let result = yaml.parse(profile, { merge: true }) || {}
   if (typeof result !== 'object') result = {}
@@ -226,9 +226,9 @@ function parseFilename(str: string): string {
 }
 
 // subscription-userinfo: upload=1234; download=2234; total=1024000; expire=2218532293
-function parseSubinfo(str: string): ISubscriptionUserInfo {
+function parseSubinfo(str: string): SubscriptionUserInfo {
   const parts = str.split(';')
-  const obj = {} as ISubscriptionUserInfo
+  const obj = {} as SubscriptionUserInfo
   parts.forEach((part) => {
     const [key, value] = part.trim().split('=')
     obj[key] = parseInt(value)

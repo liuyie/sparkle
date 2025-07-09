@@ -57,7 +57,7 @@ const PortSetting: React.FC = () => {
     return new Set(ports).size !== ports.length
   }
 
-  const onChangeNeedRestart = async (patch: Partial<IMihomoConfig>): Promise<void> => {
+  const onChangeNeedRestart = async (patch: Partial<MihomoConfig>): Promise<void> => {
     await patchControledMihomoConfig(patch)
     await restartCore()
   }

@@ -14,8 +14,8 @@ import { restartCore } from '@renderer/utils/ipc'
 import { useAppConfig } from '@renderer/hooks/use-app-config'
 
 interface Props {
-  item: IOverrideItem
-  updateOverrideItem: (item: IOverrideItem) => Promise<void>
+  item: OverrideItem
+  updateOverrideItem: (item: OverrideItem) => Promise<void>
   onClose: () => void
 }
 

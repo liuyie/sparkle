@@ -43,7 +43,7 @@ export async function initProfileUpdater(): Promise<void> {
   }
 }
 
-export async function addProfileUpdater(item: IProfileItem): Promise<void> {
+export async function addProfileUpdater(item: ProfileItem): Promise<void> {
   if (item.type === 'remote' && item.interval) {
     if (intervalPool[item.id]) {
       clearTimeout(intervalPool[item.id])

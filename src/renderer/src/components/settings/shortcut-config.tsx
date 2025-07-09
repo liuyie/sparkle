@@ -143,7 +143,7 @@ const ShortcutConfig: React.FC = () => {
 const ShortcutInput: React.FC<{
   value: string
   action: string
-  patchAppConfig: (value: Partial<IAppConfig>) => Promise<void>
+  patchAppConfig: (value: Partial<AppConfig>) => Promise<void>
 }> = (props) => {
   const { value, action, patchAppConfig } = props
   const [inputValue, setInputValue] = useState(value)
@@ -213,7 +213,7 @@ const ShortcutInput: React.FC<{
                 alert('快捷键注册失败')
               }
             } catch (e) {
-              alert(`快捷键注册失败: ${e}`)
+              alert(`快捷键注册失败：${e}`)
             }
           }}
         >

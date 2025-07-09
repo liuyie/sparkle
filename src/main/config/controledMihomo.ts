@@ -6,9 +6,9 @@ import { getAppConfig } from './app'
 import { defaultControledMihomoConfig } from '../utils/template'
 import { deepMerge } from '../utils/merge'
 
-let controledMihomoConfig: Partial<IMihomoConfig> // mihomo.yaml
+let controledMihomoConfig: Partial<MihomoConfig> // mihomo.yaml
 
-export async function getControledMihomoConfig(force = false): Promise<Partial<IMihomoConfig>> {
+export async function getControledMihomoConfig(force = false): Promise<Partial<MihomoConfig>> {
   if (force || !controledMihomoConfig) {
     const data = await readFile(controledMihomoConfigPath(), 'utf-8')
     controledMihomoConfig = yaml.parse(data, { merge: true }) || defaultControledMihomoConfig
@@ -18,7 +18,7 @@ export async function getControledMihomoConfig(force = false): Promise<Partial<I
   return controledMihomoConfig
 }
 
-export async function patchControledMihomoConfig(patch: Partial<IMihomoConfig>): Promise<void> {
+export async function patchControledMihomoConfig(patch: Partial<MihomoConfig>): Promise<void> {
   const { controlDns = true, controlSniff = true } = await getAppConfig()
   if (!controlDns) {
     delete controledMihomoConfig.dns

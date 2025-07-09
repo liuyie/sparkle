@@ -9,8 +9,8 @@ import { CgTrash } from 'react-icons/cg'
 import { includesIgnoreCase } from '@renderer/utils/includes'
 
 const cachedLogs: {
-  log: IMihomoLogInfo[]
-  trigger: ((i: IMihomoLogInfo[]) => void) | null
+  log: ControllerLog[]
+  trigger: ((i: ControllerLog[]) => void) | null
   clean: () => void
 } = {
   log: [],
@@ -23,7 +23,7 @@ const cachedLogs: {
   }
 }
 
-window.electron.ipcRenderer.on('mihomoLogs', (_e, log: IMihomoLogInfo) => {
+window.electron.ipcRenderer.on('mihomoLogs', (_e, log: ControllerLog) => {
   log.time = new Date().toLocaleString()
   cachedLogs.log.push(log)
   if (cachedLogs.log.length >= 500) {
@@ -35,7 +35,7 @@ window.electron.ipcRenderer.on('mihomoLogs', (_e, log: IMihomoLogInfo) => {
 })
 
 const Logs: React.FC = () => {
-  const [logs, setLogs] = useState<IMihomoLogInfo[]>(cachedLogs.log)
+  const [logs, setLogs] = useState<ControllerLog[]>(cachedLogs.log)
   const [filter, setFilter] = useState('')
   const [trace, setTrace] = useState(true)
 

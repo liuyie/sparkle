@@ -1,7 +1,7 @@
 import { Card, CardBody } from '@heroui/react'
 import React from 'react'
 
-const RuleItem: React.FC<IMihomoRulesDetail & { index: number }> = (props) => {
+const RuleItem: React.FC<ControllerRulesDetail & { index: number }> = (props) => {
   const { type, payload, proxy, index } = props
   return (
     <div className={`w-full px-2 pb-2 ${index === 0 ? 'pt-2' : ''}`}>

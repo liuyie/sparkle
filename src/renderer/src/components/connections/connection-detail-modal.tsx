@@ -19,7 +19,7 @@ import { BiCopy } from 'react-icons/bi'
 import { useAppConfig } from '@renderer/hooks/use-app-config'
 
 interface Props {
-  connection: IMihomoConnectionDetail
+  connection: ControllerConnectionDetail
   onClose: () => void
 }
 

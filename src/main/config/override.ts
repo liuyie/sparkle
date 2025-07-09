@@ -5,9 +5,9 @@ import { existsSync } from 'fs'
 import axios from 'axios'
 import yaml from 'yaml'
 
-let overrideConfig: IOverrideConfig // override.yaml
+let overrideConfig: OverrideConfig // override.yaml
 
-export async function getOverrideConfig(force = false): Promise<IOverrideConfig> {
+export async function getOverrideConfig(force = false): Promise<OverrideConfig> {
   if (force || !overrideConfig) {
     const data = await readFile(overrideConfigPath(), 'utf-8')
     overrideConfig = yaml.parse(data, { merge: true }) || { items: [] }
@@ -16,17 +16,17 @@ export async function getOverrideConfig(force = false): Promise<IOverrideConfig>
   return overrideConfig
 }
 
-export async function setOverrideConfig(config: IOverrideConfig): Promise<void> {
+export async function setOverrideConfig(config: OverrideConfig): Promise<void> {
   overrideConfig = config
   await writeFile(overrideConfigPath(), yaml.stringify(overrideConfig), 'utf-8')
 }
 
-export async function getOverrideItem(id: string | undefined): Promise<IOverrideItem | undefined> {
+export async function getOverrideItem(id: string | undefined): Promise<OverrideItem | undefined> {
   const { items } = await getOverrideConfig()
   return items.find((item) => item.id === id)
 }
 
-export async function updateOverrideItem(item: IOverrideItem): Promise<void> {
+export async function updateOverrideItem(item: OverrideItem): Promise<void> {
   const config = await getOverrideConfig()
   const index = config.items.findIndex((i) => i.id === item.id)
   if (index === -1) {
@@ -36,7 +36,7 @@ export async function updateOverrideItem(item: IOverrideItem): Promise<void> {
   await setOverrideConfig(config)
 }
 
-export async function addOverrideItem(item: Partial<IOverrideItem>): Promise<void> {
+export async function addOverrideItem(item: Partial<OverrideItem>): Promise<void> {
   const config = await getOverrideConfig()
   const newItem = await createOverride(item)
   if (await getOverrideItem(item.id)) {
@@ -55,7 +55,7 @@ export async function removeOverrideItem(id: string): Promise<void> {
   await rm(overridePath(id, item?.ext || 'js'))
 }
 
-export async function createOverride(item: Partial<IOverrideItem>): Promise<IOverrideItem> {
+export async function createOverride(item: Partial<OverrideItem>): Promise<OverrideItem> {
   const id = item.id || new Date().getTime().toString(16)
   const newItem = {
     id,
@@ -65,7 +65,7 @@ export async function createOverride(item: Partial<IOverrideItem>): Promise<IOve
     url: item.url,
     global: item.global || false,
     updated: new Date().getTime()
-  } as IOverrideItem
+  } as OverrideItem
   switch (newItem.type) {
     case 'remote': {
       const { 'mixed-port': mixedPort = 7890 } = await getControledMihomoConfig()

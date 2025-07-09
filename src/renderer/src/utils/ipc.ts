@@ -9,11 +9,11 @@ function ipcErrorWrapper(response: any): any {
   }
 }
 
-export async function mihomoVersion(): Promise<IMihomoVersion> {
+export async function mihomoVersion(): Promise<ControllerVersion> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('mihomoVersion'))
 }
 
-export async function mihomoConfig(): Promise<IMihomoConfigs> {
+export async function mihomoConfig(): Promise<ControllerConfigs> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('mihomoConfig'))
 }
 
@@ -27,19 +27,19 @@ export async function mihomoCloseAllConnections(name?: string): Promise<void> {
   )
 }
 
-export async function mihomoRules(): Promise<IMihomoRulesInfo> {
+export async function mihomoRules(): Promise<ControllerRules> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('mihomoRules'))
 }
 
-export async function mihomoProxies(): Promise<IMihomoProxies> {
+export async function mihomoProxies(): Promise<ControllerProxies> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('mihomoProxies'))
 }
 
-export async function mihomoGroups(): Promise<IMihomoMixedGroup[]> {
+export async function mihomoGroups(): Promise<ControllerMixedGroup[]> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('mihomoGroups'))
 }
 
-export async function mihomoProxyProviders(): Promise<IMihomoProxyProviders> {
+export async function mihomoProxyProviders(): Promise<ControllerProxyProviders> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('mihomoProxyProviders'))
 }
 
@@ -49,7 +49,7 @@ export async function mihomoUpdateProxyProviders(name: string): Promise<void> {
   )
 }
 
-export async function mihomoRuleProviders(): Promise<IMihomoRuleProviders> {
+export async function mihomoRuleProviders(): Promise<ControllerRuleProviders> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('mihomoRuleProviders'))
 }
 
@@ -59,13 +59,16 @@ export async function mihomoUpdateRuleProviders(name: string): Promise<void> {
   )
 }
 
-export async function mihomoChangeProxy(group: string, proxy: string): Promise<IMihomoProxy> {
+export async function mihomoChangeProxy(
+  group: string,
+  proxy: string
+): Promise<ControllerProxiesDetail> {
   return ipcErrorWrapper(
     await window.electron.ipcRenderer.invoke('mihomoChangeProxy', group, proxy)
   )
 }
 
-export async function mihomoUnfixedProxy(group: string): Promise<IMihomoProxy> {
+export async function mihomoUnfixedProxy(group: string): Promise<ControllerProxiesDetail> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('mihomoUnfixedProxy', group))
 }
 
@@ -81,15 +84,18 @@ export async function mihomoUpgrade(): Promise<void> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('mihomoUpgrade'))
 }
 
-export async function mihomoProxyDelay(proxy: string, url?: string): Promise<IMihomoDelay> {
+export async function mihomoProxyDelay(
+  proxy: string,
+  url?: string
+): Promise<ControllerProxiesDelay> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('mihomoProxyDelay', proxy, url))
 }
 
-export async function mihomoGroupDelay(group: string, url?: string): Promise<IMihomoGroupDelay> {
+export async function mihomoGroupDelay(group: string, url?: string): Promise<ControllerGroupDelay> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('mihomoGroupDelay', group, url))
 }
 
-export async function patchMihomoConfig(patch: Partial<IMihomoConfig>): Promise<void> {
+export async function patchMihomoConfig(patch: Partial<MihomoConfig>): Promise<void> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('patchMihomoConfig', patch))
 }
 
@@ -105,39 +111,39 @@ export async function disableAutoRun(): Promise<void> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('disableAutoRun'))
 }
 
-export async function getAppConfig(force = false): Promise<IAppConfig> {
+export async function getAppConfig(force = false): Promise<AppConfig> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('getAppConfig', force))
 }
 
-export async function patchAppConfig(patch: Partial<IAppConfig>): Promise<void> {
+export async function patchAppConfig(patch: Partial<AppConfig>): Promise<void> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('patchAppConfig', patch))
 }
 
-export async function getControledMihomoConfig(force = false): Promise<Partial<IMihomoConfig>> {
+export async function getControledMihomoConfig(force = false): Promise<Partial<MihomoConfig>> {
   return ipcErrorWrapper(
     await window.electron.ipcRenderer.invoke('getControledMihomoConfig', force)
   )
 }
 
-export async function patchControledMihomoConfig(patch: Partial<IMihomoConfig>): Promise<void> {
+export async function patchControledMihomoConfig(patch: Partial<MihomoConfig>): Promise<void> {
   return ipcErrorWrapper(
     await window.electron.ipcRenderer.invoke('patchControledMihomoConfig', patch)
   )
 }
 
-export async function getProfileConfig(force = false): Promise<IProfileConfig> {
+export async function getProfileConfig(force = false): Promise<ProfileConfig> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('getProfileConfig', force))
 }
 
-export async function setProfileConfig(config: IProfileConfig): Promise<void> {
+export async function setProfileConfig(config: ProfileConfig): Promise<void> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('setProfileConfig', config))
 }
 
-export async function getCurrentProfileItem(): Promise<IProfileItem> {
+export async function getCurrentProfileItem(): Promise<ProfileItem> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('getCurrentProfileItem'))
 }
 
-export async function getProfileItem(id: string | undefined): Promise<IProfileItem> {
+export async function getProfileItem(id: string | undefined): Promise<ProfileItem> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('getProfileItem', id))
 }
 
@@ -145,7 +151,7 @@ export async function changeCurrentProfile(id: string): Promise<void> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('changeCurrentProfile', id))
 }
 
-export async function addProfileItem(item: Partial<IProfileItem>): Promise<void> {
+export async function addProfileItem(item: Partial<ProfileItem>): Promise<void> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('addProfileItem', item))
 }
 
@@ -153,7 +159,7 @@ export async function removeProfileItem(id: string): Promise<void> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('removeProfileItem', id))
 }
 
-export async function updateProfileItem(item: IProfileItem): Promise<void> {
+export async function updateProfileItem(item: ProfileItem): Promise<void> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('updateProfileItem', item))
 }
 
@@ -173,19 +179,19 @@ export async function setProfileStr(id: string, str: string): Promise<void> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('setProfileStr', id, str))
 }
 
-export async function getOverrideConfig(force = false): Promise<IOverrideConfig> {
+export async function getOverrideConfig(force = false): Promise<OverrideConfig> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('getOverrideConfig', force))
 }
 
-export async function setOverrideConfig(config: IOverrideConfig): Promise<void> {
+export async function setOverrideConfig(config: OverrideConfig): Promise<void> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('setOverrideConfig', config))
 }
 
-export async function getOverrideItem(id: string): Promise<IOverrideItem | undefined> {
+export async function getOverrideItem(id: string): Promise<OverrideItem | undefined> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('getOverrideItem', id))
 }
 
-export async function addOverrideItem(item: Partial<IOverrideItem>): Promise<void> {
+export async function addOverrideItem(item: Partial<OverrideItem>): Promise<void> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('addOverrideItem', item))
 }
 
@@ -193,7 +199,7 @@ export async function removeOverrideItem(id: string): Promise<void> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('removeOverrideItem', id))
 }
 
-export async function updateOverrideItem(item: IOverrideItem): Promise<void> {
+export async function updateOverrideItem(item: OverrideItem): Promise<void> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('updateOverrideItem', item))
 }
 
@@ -255,11 +261,11 @@ export async function getOverrideProfileStr(): Promise<string> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('getOverrideProfileStr'))
 }
 
-export async function getRuntimeConfig(): Promise<IMihomoConfig> {
+export async function getRuntimeConfig(): Promise<MihomoConfig> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('getRuntimeConfig'))
 }
 
-export async function checkUpdate(): Promise<IAppVersion | undefined> {
+export async function checkUpdate(): Promise<AppVersion | undefined> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('checkUpdate'))
 }
 
@@ -368,11 +374,11 @@ export async function subStoreFrontendPort(): Promise<number> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('subStoreFrontendPort'))
 }
 
-export async function subStoreSubs(): Promise<ISubStoreSub[]> {
+export async function subStoreSubs(): Promise<SubStoreSub[]> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('subStoreSubs'))
 }
 
-export async function subStoreCollections(): Promise<ISubStoreSub[]> {
+export async function subStoreCollections(): Promise<SubStoreSub[]> {
   return ipcErrorWrapper(await window.electron.ipcRenderer.invoke('subStoreCollections'))
 }
 
