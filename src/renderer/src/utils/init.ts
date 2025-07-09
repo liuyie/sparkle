@@ -1,5 +1,3 @@
- 
-
 import { getPlatform, getVersion } from './ipc'
 // const originError = console.error
 // const originWarn = console.warn

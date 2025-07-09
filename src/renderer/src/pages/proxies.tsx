@@ -231,7 +231,7 @@ const Proxies: React.FC = () => {
         <div
           className={`w-full pt-2 ${index === groupCounts.length - 1 && !isOpen[index] ? 'pb-2' : ''} px-2`}
         >
-          <Card isPressable fullWidth onPress={() => toggleOpen(index)}>
+          <Card as="div" isPressable fullWidth onPress={() => toggleOpen(index)}>
             <CardBody className="w-full h-14">
               <div className="flex justify-between h-full">
                 <div className="flex text-ellipsis overflow-hidden whitespace-nowrap h-full">
@@ -263,7 +263,7 @@ const Proxies: React.FC = () => {
                     )}
                   </div>
                 </div>
-                <div className="flex">
+                <div className="flex" onClick={(e) => e.stopPropagation()}>
                   {proxyDisplayMode === 'full' && (
                     <Chip size="sm" className="my-1 mr-2">
                       {groups[index].all.length}

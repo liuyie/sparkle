@@ -173,6 +173,7 @@ const OverrideItem: React.FC<Props> = (props) => {
       )}
       {openLog && <ExecLogModal id={info.id} onClose={() => setOpenLog(false)} />}
       <Card
+        as="div"
         fullWidth
         isPressable
         onPress={() => {
@@ -189,7 +190,7 @@ const OverrideItem: React.FC<Props> = (props) => {
               >
                 {info?.name}
               </h3>
-              <div className="flex">
+              <div className="flex" onClick={(e) => e.stopPropagation()}>
                 {info.type === 'remote' && (
                   <Button
                     isIconOnly
