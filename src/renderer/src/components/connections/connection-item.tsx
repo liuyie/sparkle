@@ -6,12 +6,12 @@ import { CgClose, CgTrash } from 'react-icons/cg'
 
 interface Props {
   index: number
-  info: IMihomoConnectionDetail
+  info: ControllerConnectionDetail
   displayIcon?: boolean
   iconUrl: string
   displayName?: string
-  selected: IMihomoConnectionDetail | undefined
-  setSelected: React.Dispatch<React.SetStateAction<IMihomoConnectionDetail | undefined>>
+  selected: ControllerConnectionDetail | undefined
+  setSelected: React.Dispatch<React.SetStateAction<ControllerConnectionDetail | undefined>>
   setIsDetailModalOpen: React.Dispatch<React.SetStateAction<boolean>>
   close: (id: string) => void
 }
@@ -78,7 +78,7 @@ const ConnectionItemComponent: React.FC<Props> = ({
 
   return (
     <div className={`px-2 pb-2 ${index === 0 ? 'pt-2' : ''}`} style={{ minHeight: 80 }}>
-      <Card isPressable className="w-full" onPress={handleCardPress}>
+      <Card as="div" isPressable className="w-full" onPress={handleCardPress}>
         <div className="w-full flex justify-between items-center">
           {displayIcon && (
             <div>

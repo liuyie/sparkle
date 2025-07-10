@@ -53,7 +53,7 @@ const Sniffer: React.FC = () => {
     setChanged(true)
   }
 
-  const onSave = async (patch: Partial<IMihomoConfig>): Promise<void> => {
+  const onSave = async (patch: Partial<MihomoConfig>): Promise<void> => {
     try {
       setChanged(false)
       await patchControledMihomoConfig(patch)

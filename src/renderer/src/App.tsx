@@ -264,7 +264,7 @@ const App: React.FC = () => {
           setSiderWidthValue(e.clientX)
         }
       }}
-      className={`w-full h-[100vh] flex ${resizing ? 'cursor-ew-resize' : ''}`}
+      className={`w-full h-screen flex ${resizing ? 'cursor-ew-resize' : ''}`}
     >
       {showQuitConfirm && (
         <ConfirmModal
@@ -337,7 +337,7 @@ const App: React.FC = () => {
         <div style={{ width: `${narrowWidth}px` }} className="side h-full">
           <div className="app-drag flex justify-center items-center z-40 bg-transparent h-[45px]">
             {platform !== 'darwin' && (
-              <MihomoIcon className="h-[32px] leading-[32px] text-lg mx-[1px]" />
+              <MihomoIcon className="h-[32px] leading-[32px] text-lg mx-px" />
             )}
           </div>
           <div

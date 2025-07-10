@@ -3,9 +3,9 @@ import useSWR from 'swr'
 import { getControledMihomoConfig, patchControledMihomoConfig as patch } from '@renderer/utils/ipc'
 
 interface ControledMihomoConfigContextType {
-  controledMihomoConfig: Partial<IMihomoConfig> | undefined
+  controledMihomoConfig: Partial<MihomoConfig> | undefined
   mutateControledMihomoConfig: () => void
-  patchControledMihomoConfig: (value: Partial<IMihomoConfig>) => Promise<void>
+  patchControledMihomoConfig: (value: Partial<MihomoConfig>) => Promise<void>
 }
 
 const ControledMihomoConfigContext = createContext<ControledMihomoConfigContextType | undefined>(
@@ -18,7 +18,7 @@ export const ControledMihomoConfigProvider: React.FC<{ children: ReactNode }> = 
     () => getControledMihomoConfig()
   )
 
-  const patchControledMihomoConfig = async (value: Partial<IMihomoConfig>): Promise<void> => {
+  const patchControledMihomoConfig = async (value: Partial<MihomoConfig>): Promise<void> => {
     try {
       await patch(value)
     } catch (e) {

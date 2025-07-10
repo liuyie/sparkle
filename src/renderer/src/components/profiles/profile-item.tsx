@@ -24,10 +24,10 @@ import { useAppConfig } from '@renderer/hooks/use-app-config'
 import ConfirmModal from '../base/base-confirm'
 
 interface Props {
-  info: IProfileItem
+  info: ProfileItem
   isCurrent: boolean
-  addProfileItem: (item: Partial<IProfileItem>) => Promise<void>
-  updateProfileItem: (item: IProfileItem) => Promise<void>
+  addProfileItem: (item: Partial<ProfileItem>) => Promise<void>
+  updateProfileItem: (item: ProfileItem) => Promise<void>
   removeProfileItem: (id: string) => Promise<void>
   mutateProfileConfig: () => void
   onClick: () => Promise<void>
@@ -146,11 +146,11 @@ const ProfileItem: React.FC<Props> = (props) => {
     if (isDragging) {
       setTimeout(() => {
         setDisableSelect(true)
-      }, 200)
+      }, 100)
     } else {
       setTimeout(() => {
         setDisableSelect(false)
-      }, 200)
+      }, 100)
     }
   }, [isDragging])
 
@@ -185,6 +185,7 @@ const ProfileItem: React.FC<Props> = (props) => {
         />
       )}
       <Card
+        as="div"
         fullWidth
         isPressable
         onPress={() => {
@@ -205,7 +206,7 @@ const ProfileItem: React.FC<Props> = (props) => {
               >
                 {info?.name}
               </h3>
-              <div className="flex">
+              <div className="flex" onClick={(e) => e.stopPropagation()}>
                 {info.type === 'remote' && (
                   <Tooltip placement="left" content={dayjs(info.updated).fromNow()}>
                     <Button

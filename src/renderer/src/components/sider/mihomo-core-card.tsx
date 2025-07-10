@@ -40,7 +40,7 @@ const MihomoCoreCard: React.FC<Props> = (props) => {
     const token = PubSub.subscribe('mihomo-core-changed', () => {
       mutate()
     })
-    window.electron.ipcRenderer.on('mihomoMemory', (_e, info: IMihomoMemoryInfo) => {
+    window.electron.ipcRenderer.on('mihomoMemory', (_e, info: ControllerMemory) => {
       setMem(info.inuse)
     })
     return (): void => {
@@ -138,7 +138,7 @@ const MihomoCoreCard: React.FC<Props> = (props) => {
           {...listeners}
           className={`${match ? 'bg-primary' : 'hover:bg-primary/30'} ${isDragging ? 'scale-[0.97] tap-highlight-transparent' : ''}`}
         >
-          <CardBody className="pb-1 pt-0 px-0">
+          <CardBody className="pb-1 pt-0 px-0 overflow-y-visible">
             <div className="flex justify-between">
               <Button
                 isIconOnly

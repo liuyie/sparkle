@@ -3,7 +3,7 @@ import { FaCircleArrowDown, FaCircleArrowUp } from 'react-icons/fa6'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { calcTraffic } from '@renderer/utils/calc'
 import { mihomoConfig } from '@renderer/utils/ipc'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { IoLink } from 'react-icons/io5'
@@ -16,6 +16,7 @@ let currentUpload: number | undefined = undefined
 let currentDownload: number | undefined = undefined
 let hasShowTraffic = false
 let drawing = false
+let updateTimeoutId: NodeJS.Timeout | null = null
 
 interface Props {
   iconOnly?: boolean
@@ -43,36 +44,64 @@ const ConnCard: React.FC<Props> = (props) => {
     id: 'connection'
   })
   const [series, setSeries] = useState(Array(10).fill(0))
-  const [chartColor, setChartColor] = useState('rgba(255,255,255)')
+  const [chartColor, setChartColor] = useState('rgba(255,255,255,0.5)')
 
   useEffect(() => {
-    setChartColor(
-      match
-        ? `hsla(${getComputedStyle(document.documentElement).getPropertyValue('--heroui-primary-foreground')})`
-        : `hsla(${getComputedStyle(document.documentElement).getPropertyValue('--heroui-foreground')})`
-    )
-  }, [theme, systemTheme, match])
-
-  useEffect(() => {
-    setTimeout(() => {
-      setChartColor(
-        match
+    const updateChartColor = () => {
+      try {
+        const color = match
           ? `hsla(${getComputedStyle(document.documentElement).getPropertyValue('--heroui-primary-foreground')})`
           : `hsla(${getComputedStyle(document.documentElement).getPropertyValue('--heroui-foreground')})`
-      )
-    }, 200)
-  }, [customTheme])
+        setChartColor(color)
+      } catch (error) {
+        setChartColor('rgba(255,255,255,0.5)')
+      }
+    }
+
+    const timeoutId = setTimeout(updateChartColor, 100)
+    return () => clearTimeout(timeoutId)
+  }, [theme, systemTheme, match, customTheme])
+
+  const chartData = useMemo(() => {
+    if (!Array.isArray(series) || series.length === 0) {
+      return Array(10)
+        .fill(0)
+        .map((v, index) => ({ traffic: v, index }))
+    }
+    return series.map((v, index) => ({ traffic: v || 0, index }))
+  }, [series])
+
+  const gradientId = useMemo(() => `gradient-conn-${Math.random().toString(36).substr(2, 9)}`, [])
+
+  const safeChartColor = useMemo(() => {
+    if (typeof chartColor === 'string' && chartColor.trim()) {
+      return chartColor
+    }
+    return 'rgba(255,255,255,0.5)'
+  }, [chartColor])
 
   const transform = tf ? { x: tf.x, y: tf.y, scaleX: 1, scaleY: 1 } : null
-  useEffect(() => {
-    window.electron.ipcRenderer.on('mihomoTraffic', async (_e, info: IMihomoTrafficInfo) => {
+
+  const handleTraffic = useCallback(
+    async (_e: unknown, info: ControllerTraffic) => {
       setUpload(info.up)
       setDownload(info.down)
       mihomoConfig().then((config) => setInterfaceName(config['interface-name']))
-      const data = series
-      data.shift()
-      data.push(info.up + info.down)
-      setSeries([...data])
+
+      if (updateTimeoutId) {
+        clearTimeout(updateTimeoutId)
+      }
+
+      updateTimeoutId = setTimeout(() => {
+        setSeries((prevSeries) => {
+          const newData = [...prevSeries]
+          newData.shift()
+          newData.push(info.up + info.down)
+          return newData
+        })
+        updateTimeoutId = null
+      }, 100)
+
       if (platform === 'darwin' && showTraffic) {
         if (drawing) return
         drawing = true
@@ -89,11 +118,17 @@ const ConnCard: React.FC<Props> = (props) => {
         window.electron.ipcRenderer.send('trayIconUpdate', trayIconBase64)
         hasShowTraffic = false
       }
-    })
+    },
+    [showTraffic]
+  )
+
+  useEffect(() => {
+    window.electron.ipcRenderer.on('mihomoTraffic', handleTraffic)
+
     return (): void => {
       window.electron.ipcRenderer.removeAllListeners('mihomoTraffic')
     }
-  }, [showTraffic])
+  }, [handleTraffic])
 
   if (iconOnly) {
     return (
@@ -134,7 +169,7 @@ const ConnCard: React.FC<Props> = (props) => {
             {...listeners}
             className={`${match ? 'bg-primary' : 'hover:bg-primary/30'} ${isDragging ? 'scale-[0.97] tap-highlight-transparent' : ''} relative overflow-hidden`}
           >
-            <CardBody className="pb-1 pt-0 px-0">
+            <CardBody className="pb-1 pt-0 px-0 overflow-y-visible">
               <div className="flex justify-between">
                 <Button
                   isIconOnly
@@ -175,13 +210,14 @@ const ConnCard: React.FC<Props> = (props) => {
               className="absolute top-0 left-0 pointer-events-none rounded-[14px]"
             >
               <AreaChart
-                data={series.map((v) => ({ traffic: v }))}
+                data={chartData}
                 margin={{ top: 50, right: 0, left: 0, bottom: 0 }}
+                syncId="traffic"
               >
                 <defs>
-                  <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={chartColor} stopOpacity={0.8} />
-                    <stop offset="100%" stopColor={chartColor} stopOpacity={0} />
+                  <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={safeChartColor} stopOpacity={0.8} />
+                    <stop offset="100%" stopColor={safeChartColor} stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <Area
@@ -189,7 +225,7 @@ const ConnCard: React.FC<Props> = (props) => {
                   type="monotone"
                   dataKey="traffic"
                   stroke="none"
-                  fill="url(#gradient)"
+                  fill={`url(#${gradientId})`}
                 />
               </AreaChart>
             </ResponsiveContainer>
@@ -203,7 +239,7 @@ const ConnCard: React.FC<Props> = (props) => {
           {...listeners}
           className={`${match ? 'bg-primary' : 'hover:bg-primary/30'} ${isDragging ? 'scale-[0.97] tap-highlight-transparent' : ''}`}
         >
-          <CardBody className="pb-1 pt-0 px-0">
+          <CardBody className="pb-1 pt-0 px-0 overflow-y-visible">
             <div className="flex justify-between">
               <Button
                 isIconOnly
@@ -231,7 +267,7 @@ const ConnCard: React.FC<Props> = (props) => {
   )
 }
 
-export default ConnCard
+export default React.memo(ConnCard)
 
 const drawSvg = async (upload: number, download: number): Promise<void> => {
   if (upload === currentUpload && download === currentDownload) return

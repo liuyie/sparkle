@@ -41,17 +41,17 @@ export const getAxios = async (force: boolean = false): Promise<AxiosInstance> =
   return axiosIns
 }
 
-export async function mihomoVersion(): Promise<IMihomoVersion> {
+export async function mihomoVersion(): Promise<ControllerVersion> {
   const instance = await getAxios()
   return await instance.get('/version')
 }
 
-export const mihomoConfig = async (): Promise<IMihomoConfigs> => {
+export const mihomoConfig = async (): Promise<ControllerConfigs> => {
   const instance = await getAxios()
   return await instance.get('/configs')
 }
 
-export const patchMihomoConfig = async (patch: Partial<IMihomoConfig>): Promise<void> => {
+export const patchMihomoConfig = async (patch: Partial<ControllerConfigs>): Promise<void> => {
   const instance = await getAxios()
   return await instance.patch('/configs', patch)
 }
@@ -61,7 +61,7 @@ export const mihomoCloseConnection = async (id: string): Promise<void> => {
   return await instance.delete(`/connections/${encodeURIComponent(id)}`)
 }
 
-export const mihomoGetConnections = async (): Promise<IMihomoConnectionsInfo> => {
+export const mihomoGetConnections = async (): Promise<ControllerConnections> => {
   const instance = await getAxios()
   return await instance.get('/connections')
 }
@@ -85,26 +85,22 @@ export const mihomoCloseAllConnections = async (name?: string): Promise<void> =>
   }
 }
 
-export const mihomoRules = async (): Promise<IMihomoRulesInfo> => {
+export const mihomoRules = async (): Promise<ControllerRules> => {
   const instance = await getAxios()
   return await instance.get('/rules')
 }
 
-export const mihomoProxies = async (): Promise<IMihomoProxies> => {
+export const mihomoProxies = async (): Promise<ControllerProxies> => {
   const instance = await getAxios()
-  const proxies = (await instance.get('/proxies')) as IMihomoProxies
-  if (!proxies.proxies['GLOBAL']) {
-    throw new Error('GLOBAL proxy not found')
-  }
-  return proxies
+  return await instance.get('/proxies')
 }
 
-export const mihomoGroups = async (): Promise<IMihomoMixedGroup[]> => {
+export const mihomoGroups = async (): Promise<ControllerMixedGroup[]> => {
   const { mode = 'rule' } = await getControledMihomoConfig()
   if (mode === 'direct') return []
   const proxies = await mihomoProxies()
   const runtime = await getRuntimeConfig()
-  const groups: IMihomoMixedGroup[] = []
+  const groups: ControllerMixedGroup[] = []
   runtime?.['proxy-groups']?.forEach((group: { name: string; url?: string }) => {
     const { name, url } = group
     if (proxies.proxies[name] && 'all' in proxies.proxies[name] && !proxies.proxies[name].hidden) {
@@ -115,7 +111,7 @@ export const mihomoGroups = async (): Promise<IMihomoMixedGroup[]> => {
     }
   })
   if (!groups.find((group) => group.name === 'GLOBAL')) {
-    const newGlobal = proxies.proxies['GLOBAL'] as IMihomoGroup
+    const newGlobal = proxies.proxies['GLOBAL'] as ControllerGroupDetail
     if (!newGlobal.hidden) {
       const newAll = newGlobal.all.map((name) => proxies.proxies[name])
       groups.push({ ...newGlobal, all: newAll })
@@ -128,7 +124,7 @@ export const mihomoGroups = async (): Promise<IMihomoMixedGroup[]> => {
   return groups
 }
 
-export const mihomoProxyProviders = async (): Promise<IMihomoProxyProviders> => {
+export const mihomoProxyProviders = async (): Promise<ControllerProxyProviders> => {
   const instance = await getAxios()
   return await instance.get('/providers/proxies')
 }
@@ -138,7 +134,7 @@ export const mihomoUpdateProxyProviders = async (name: string): Promise<void> =>
   return await instance.put(`/providers/proxies/${encodeURIComponent(name)}`)
 }
 
-export const mihomoRuleProviders = async (): Promise<IMihomoRuleProviders> => {
+export const mihomoRuleProviders = async (): Promise<ControllerRuleProviders> => {
   const instance = await getAxios()
   return await instance.get('/providers/rules')
 }
@@ -148,17 +144,23 @@ export const mihomoUpdateRuleProviders = async (name: string): Promise<void> => 
   return await instance.put(`/providers/rules/${encodeURIComponent(name)}`)
 }
 
-export const mihomoChangeProxy = async (group: string, proxy: string): Promise<IMihomoProxy> => {
+export const mihomoChangeProxy = async (
+  group: string,
+  proxy: string
+): Promise<ControllerProxiesDetail> => {
   const instance = await getAxios()
   return await instance.put(`/proxies/${encodeURIComponent(group)}`, { name: proxy })
 }
 
-export const mihomoUnfixedProxy = async (group: string): Promise<IMihomoProxy> => {
+export const mihomoUnfixedProxy = async (group: string): Promise<ControllerProxiesDetail> => {
   const instance = await getAxios()
   return await instance.delete(`/proxies/${encodeURIComponent(group)}`)
 }
 
-export const mihomoProxyDelay = async (proxy: string, url?: string): Promise<IMihomoDelay> => {
+export const mihomoProxyDelay = async (
+  proxy: string,
+  url?: string
+): Promise<ControllerProxiesDelay> => {
   const appConfig = await getAppConfig()
   const { delayTestUrl, delayTestTimeout } = appConfig
   const instance = await getAxios()
@@ -170,7 +172,10 @@ export const mihomoProxyDelay = async (proxy: string, url?: string): Promise<IMi
   })
 }
 
-export const mihomoGroupDelay = async (group: string, url?: string): Promise<IMihomoGroupDelay> => {
+export const mihomoGroupDelay = async (
+  group: string,
+  url?: string
+): Promise<ControllerGroupDelay> => {
   const appConfig = await getAppConfig()
   const { delayTestUrl, delayTestTimeout } = appConfig
   const instance = await getAxios()
@@ -216,7 +221,7 @@ const mihomoTraffic = async (): Promise<void> => {
 
   mihomoTrafficWs.onmessage = async (e): Promise<void> => {
     const data = e.data as string
-    const json = JSON.parse(data) as IMihomoTrafficInfo
+    const json = JSON.parse(data) as ControllerTraffic
     trafficRetry = 10
     try {
       mainWindow?.webContents.send('mihomoTraffic', json)
@@ -270,7 +275,7 @@ const mihomoMemory = async (): Promise<void> => {
     const data = e.data as string
     memoryRetry = 10
     try {
-      mainWindow?.webContents.send('mihomoMemory', JSON.parse(data) as IMihomoMemoryInfo)
+      mainWindow?.webContents.send('mihomoMemory', JSON.parse(data) as ControllerMemory)
     } catch {
       // ignore
     }
@@ -314,7 +319,7 @@ const mihomoLogs = async (): Promise<void> => {
     const data = e.data as string
     logsRetry = 10
     try {
-      mainWindow?.webContents.send('mihomoLogs', JSON.parse(data) as IMihomoLogInfo)
+      mainWindow?.webContents.send('mihomoLogs', JSON.parse(data) as ControllerLog)
     } catch {
       // ignore
     }
@@ -356,7 +361,7 @@ const mihomoConnections = async (): Promise<void> => {
     const data = e.data as string
     connectionsRetry = 10
     try {
-      mainWindow?.webContents.send('mihomoConnections', JSON.parse(data) as IMihomoConnectionsInfo)
+      mainWindow?.webContents.send('mihomoConnections', JSON.parse(data) as ControllerConnections)
     } catch {
       // ignore
     }

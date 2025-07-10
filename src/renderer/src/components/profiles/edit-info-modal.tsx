@@ -22,8 +22,8 @@ import { FaPlus } from 'react-icons/fa6'
 import { useAppConfig } from '@renderer/hooks/use-app-config'
 
 interface Props {
-  item: IProfileItem
-  updateProfileItem: (item: IProfileItem) => Promise<void>
+  item: ProfileItem
+  updateProfileItem: (item: ProfileItem) => Promise<void>
   onClose: () => void
 }
 

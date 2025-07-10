@@ -9,11 +9,11 @@ import {
 } from '@renderer/utils/ipc'
 
 interface OverrideConfigContextType {
-  overrideConfig: IOverrideConfig | undefined
-  setOverrideConfig: (config: IOverrideConfig) => Promise<void>
+  overrideConfig: OverrideConfig | undefined
+  setOverrideConfig: (config: OverrideConfig) => Promise<void>
   mutateOverrideConfig: () => void
-  addOverrideItem: (item: Partial<IOverrideItem>) => Promise<void>
-  updateOverrideItem: (item: IOverrideItem) => Promise<void>
+  addOverrideItem: (item: Partial<OverrideItem>) => Promise<void>
+  updateOverrideItem: (item: OverrideItem) => Promise<void>
   removeOverrideItem: (id: string) => Promise<void>
 }
 
@@ -24,7 +24,7 @@ export const OverrideConfigProvider: React.FC<{ children: ReactNode }> = ({ chil
     getOverrideConfig()
   )
 
-  const setOverrideConfig = async (config: IOverrideConfig): Promise<void> => {
+  const setOverrideConfig = async (config: OverrideConfig): Promise<void> => {
     try {
       await set(config)
     } catch (e) {
@@ -34,7 +34,7 @@ export const OverrideConfigProvider: React.FC<{ children: ReactNode }> = ({ chil
     }
   }
 
-  const addOverrideItem = async (item: Partial<IOverrideItem>): Promise<void> => {
+  const addOverrideItem = async (item: Partial<OverrideItem>): Promise<void> => {
     try {
       await add(item)
     } catch (e) {
@@ -54,7 +54,7 @@ export const OverrideConfigProvider: React.FC<{ children: ReactNode }> = ({ chil
     }
   }
 
-  const updateOverrideItem = async (item: IOverrideItem): Promise<void> => {
+  const updateOverrideItem = async (item: OverrideItem): Promise<void> => {
     try {
       await update(item)
     } catch (e) {

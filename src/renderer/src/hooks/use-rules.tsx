@@ -3,14 +3,14 @@ import useSWR from 'swr'
 import { mihomoRules } from '@renderer/utils/ipc'
 
 interface RulesContextType {
-  rules: IMihomoRulesInfo | undefined
+  rules: ControllerRules | undefined
   mutate: () => void
 }
 
 const RulesContext = createContext<RulesContextType | undefined>(undefined)
 
 export const RulesProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const { data: rules, mutate } = useSWR<IMihomoRulesInfo>('mihomoRules', mihomoRules, {
+  const { data: rules, mutate } = useSWR<ControllerRules>('mihomoRules', mihomoRules, {
     errorRetryInterval: 200,
     errorRetryCount: 10
   })

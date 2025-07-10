@@ -40,7 +40,7 @@ const Proxies: React.FC = () => {
   const virtuosoRef = useRef<GroupedVirtuosoHandle>(null)
   const { groupCounts, allProxies } = useMemo(() => {
     const groupCounts: number[] = []
-    const allProxies: (IMihomoProxy | IMihomoGroup)[][] = []
+    const allProxies: (ControllerProxiesDetail | ControllerGroupDetail)[][] = []
     if (groups.length !== searchValue.length) setSearchValue(Array(groups.length).fill(''))
     groups.forEach((group, index) => {
       if (isOpen[index]) {
@@ -81,9 +81,12 @@ const Proxies: React.FC = () => {
     [autoCloseConnection, mutate]
   )
 
-  const onProxyDelay = useCallback(async (proxy: string, url?: string): Promise<IMihomoDelay> => {
-    return await mihomoProxyDelay(proxy, url)
-  }, [])
+  const onProxyDelay = useCallback(
+    async (proxy: string, url?: string): Promise<ControllerProxiesDelay> => {
+      return await mihomoProxyDelay(proxy, url)
+    },
+    []
+  )
 
   const onGroupDelay = useCallback(
     async (index: number): Promise<void> => {
@@ -231,7 +234,7 @@ const Proxies: React.FC = () => {
         <div
           className={`w-full pt-2 ${index === groupCounts.length - 1 && !isOpen[index] ? 'pb-2' : ''} px-2`}
         >
-          <Card isPressable fullWidth onPress={() => toggleOpen(index)}>
+          <Card as="div" isPressable fullWidth onPress={() => toggleOpen(index)}>
             <CardBody className="w-full h-14">
               <div className="flex justify-between h-full">
                 <div className="flex text-ellipsis overflow-hidden whitespace-nowrap h-full">
@@ -251,19 +254,19 @@ const Proxies: React.FC = () => {
                     className={`flex flex-col h-full ${proxyDisplayMode === 'full' ? '' : 'justify-center'}`}
                   >
                     <div
-                      className={`text-ellipsis overflow-hidden whitespace-nowrap leading-tight ${proxyDisplayMode === 'full' ? 'text-md flex-[5] flex items-center' : 'text-lg'}`}
+                      className={`text-ellipsis overflow-hidden whitespace-nowrap leading-tight ${proxyDisplayMode === 'full' ? 'text-md flex-5 flex items-center' : 'text-lg'}`}
                     >
                       <span className="flag-emoji inline-block">{groups[index].name}</span>
                     </div>
                     {proxyDisplayMode === 'full' && (
-                      <div className="text-ellipsis whitespace-nowrap text-[10px] text-foreground-500 leading-tight flex-[3] flex items-center">
+                      <div className="text-ellipsis whitespace-nowrap text-[10px] text-foreground-500 leading-tight flex-3 flex items-center">
                         <span>{groups[index].type}</span>
                         <span className="flag-emoji ml-1 inline-block">{groups[index].now}</span>
                       </div>
                     )}
                   </div>
                 </div>
-                <div className="flex">
+                <div className="flex" onClick={(e) => e.stopPropagation()}>
                   {proxyDisplayMode === 'full' && (
                     <Chip size="sm" className="my-1 mr-2">
                       {groups[index].all.length}

@@ -17,7 +17,7 @@ import { cropAndPadTransparent } from '@renderer/utils/image'
 import { platform } from '@renderer/utils/init'
 import { useControledMihomoConfig } from '@renderer/hooks/use-controled-mihomo-config'
 
-let cachedConnections: IMihomoConnectionDetail[] = []
+let cachedConnections: ControllerConnectionDetail[] = []
 
 const Connections: React.FC = () => {
   const { controledMihomoConfig } = useControledMihomoConfig()
@@ -30,12 +30,13 @@ const Connections: React.FC = () => {
     displayIcon = true,
     displayAppName = true
   } = appConfig || {}
-  const [connectionsInfo, setConnectionsInfo] = useState<IMihomoConnectionsInfo>()
-  const [allConnections, setAllConnections] = useState<IMihomoConnectionDetail[]>(cachedConnections)
-  const [activeConnections, setActiveConnections] = useState<IMihomoConnectionDetail[]>([])
-  const [closedConnections, setClosedConnections] = useState<IMihomoConnectionDetail[]>([])
+  const [connectionsInfo, setConnectionsInfo] = useState<ControllerConnections>()
+  const [allConnections, setAllConnections] =
+    useState<ControllerConnectionDetail[]>(cachedConnections)
+  const [activeConnections, setActiveConnections] = useState<ControllerConnectionDetail[]>([])
+  const [closedConnections, setClosedConnections] = useState<ControllerConnectionDetail[]>([])
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
-  const [selected, setSelected] = useState<IMihomoConnectionDetail>()
+  const [selected, setSelected] = useState<ControllerConnectionDetail>()
 
   const [iconMap, setIconMap] = useState<Record<string, string>>({})
   const [appNameCache, setAppNameCache] = useState<Record<string, string>>({})
@@ -129,7 +130,7 @@ const Connections: React.FC = () => {
   )
 
   useEffect(() => {
-    const handleConnections = (_e: unknown, info: IMihomoConnectionsInfo): void => {
+    const handleConnections = (_e: unknown, info: ControllerConnections): void => {
       setConnectionsInfo(info)
 
       if (!info.connections) return
@@ -369,7 +370,7 @@ const Connections: React.FC = () => {
   }, [connectionDirection, patchAppConfig])
 
   const renderConnectionItem = useCallback(
-    (i: number, connection: IMihomoConnectionDetail) => {
+    (i: number, connection: ControllerConnectionDetail) => {
       const pathKey = connection.metadata.processPath || ''
       const iconUrl =
         displayIcon && findProcessMode !== 'off' && pathKey ? iconMap[pathKey] || '' : ''
@@ -522,7 +523,7 @@ const Connections: React.FC = () => {
         </div>
         <Divider />
       </div>
-      <div className="h-[calc(100vh-100px)] mt-[1px]">
+      <div className="h-[calc(100vh-100px)] mt-px">
         <Virtuoso data={filteredConnections} itemContent={renderConnectionItem} />
       </div>
     </BasePage>

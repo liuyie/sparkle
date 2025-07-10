@@ -54,7 +54,13 @@ const Profiles: React.FC = () => {
   const [fileOver, setFileOver] = useState(false)
   const [url, setUrl] = useState('')
   const isUrlEmpty = url.trim() === ''
-  const sensors = useSensors(useSensor(PointerSensor))
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 2
+      }
+    })
+  )
   const { data: subs = [], mutate: mutateSubs } = useSWR(
     useSubStore ? 'subStoreSubs' : undefined,
     useSubStore ? subStoreSubs : (): undefined => {}

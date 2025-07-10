@@ -20,9 +20,9 @@ import { openFile, restartCore } from '@renderer/utils/ipc'
 import ConfirmModal from '../base/base-confirm'
 
 interface Props {
-  info: IOverrideItem
-  addOverrideItem: (item: Partial<IOverrideItem>) => Promise<void>
-  updateOverrideItem: (item: IOverrideItem) => Promise<void>
+  info: OverrideItem
+  addOverrideItem: (item: Partial<OverrideItem>) => Promise<void>
+  updateOverrideItem: (item: OverrideItem) => Promise<void>
   removeOverrideItem: (id: string) => Promise<void>
   mutateOverrideConfig: () => void
 }
@@ -173,6 +173,7 @@ const OverrideItem: React.FC<Props> = (props) => {
       )}
       {openLog && <ExecLogModal id={info.id} onClose={() => setOpenLog(false)} />}
       <Card
+        as="div"
         fullWidth
         isPressable
         onPress={() => {
@@ -189,7 +190,7 @@ const OverrideItem: React.FC<Props> = (props) => {
               >
                 {info?.name}
               </h3>
-              <div className="flex">
+              <div className="flex" onClick={(e) => e.stopPropagation()}>
                 {info.type === 'remote' && (
                   <Button
                     isIconOnly
