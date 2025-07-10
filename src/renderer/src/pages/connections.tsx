@@ -10,7 +10,6 @@ import ConnectionDetailModal from '@renderer/components/connections/connection-d
 import { CgClose, CgTrash } from 'react-icons/cg'
 import { useAppConfig } from '@renderer/hooks/use-app-config'
 import { includesIgnoreCase } from '@renderer/utils/includes'
-import { differenceWith, unionWith } from 'lodash'
 import { getIconDataURL, getAppName } from '@renderer/utils/ipc'
 import { HiSortAscending, HiSortDescending } from 'react-icons/hi'
 import { cropAndPadTransparent } from '@renderer/utils/image'
@@ -43,6 +42,7 @@ const Connections: React.FC = () => {
   const [firstItemRefreshTrigger, setFirstItemRefreshTrigger] = useState(0)
 
   const [tab, setTab] = useState('active')
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set())
 
   const iconRequestQueue = useRef(new Set<string>())
   const processingIcons = useRef(new Set<string>())
@@ -58,8 +58,19 @@ const Connections: React.FC = () => {
     let filtered = connections
     if (filter !== '') {
       filtered = connections.filter((connection) => {
-        const raw = JSON.stringify(connection)
-        return includesIgnoreCase(raw, filter)
+        const searchableFields = [
+          connection.metadata.process,
+          connection.metadata.host,
+          connection.metadata.destinationIP,
+          connection.metadata.sourceIP,
+          connection.chains?.[0],
+          connection.rule,
+          connection.rulePayload
+        ]
+          .filter(Boolean)
+          .join(' ')
+
+        return includesIgnoreCase(searchableFields, filter)
       })
     }
 
@@ -102,31 +113,38 @@ const Connections: React.FC = () => {
     return filtered
   }, [activeConnections, closedConnections, filter, connectionDirection, connectionOrderBy, tab])
 
+  const trashAllClosedConnection = useCallback((): void => {
+    if (closedConnections.length === 0) return
+
+    const trashIds = closedConnections.map((conn) => conn.id)
+    setDeletedIds((prev) => new Set([...prev, ...trashIds]))
+    setAllConnections((allConns) => {
+      const updatedConnections = allConns.filter((conn) => !trashIds.includes(conn.id))
+      cachedConnections = updatedConnections
+      return updatedConnections
+    })
+    setClosedConnections([])
+  }, [closedConnections])
+
+  const trashClosedConnection = useCallback((id: string): void => {
+    setDeletedIds((prev) => new Set([...prev, id]))
+    setAllConnections((allConns) => {
+      const updatedConnections = allConns.filter((conn) => conn.id !== id)
+      cachedConnections = updatedConnections
+      return updatedConnections
+    })
+    setClosedConnections((closedConns) => closedConns.filter((conn) => conn.id !== id))
+  }, [])
+
   const closeAllConnections = useCallback((): void => {
     tab === 'active' ? mihomoCloseAllConnections() : trashAllClosedConnection()
-  }, [tab])
+  }, [tab, trashAllClosedConnection])
 
   const closeConnection = useCallback(
     (id: string): void => {
       tab === 'active' ? mihomoCloseConnection(id) : trashClosedConnection(id)
     },
-    [tab]
-  )
-
-  const trashAllClosedConnection = useCallback((): void => {
-    const trashIds = closedConnections.map((conn) => conn.id)
-    setAllConnections((allConns) => allConns.filter((conn) => !trashIds.includes(conn.id)))
-    setClosedConnections([])
-    cachedConnections = allConnections
-  }, [closedConnections, allConnections])
-
-  const trashClosedConnection = useCallback(
-    (id: string): void => {
-      setAllConnections((allConns) => allConns.filter((conn) => conn.id !== id))
-      setClosedConnections((closedConns) => closedConns.filter((conn) => conn.id !== id))
-      cachedConnections = allConnections
-    },
-    [allConnections]
+    [tab, trashClosedConnection]
   )
 
   useEffect(() => {
@@ -135,15 +153,18 @@ const Connections: React.FC = () => {
 
       if (!info.connections) return
 
-      const allConns = unionWith(activeConnections, allConnections, (a, b) => a.id === b.id)
+      const prevActiveMap = new Map(activeConnections.map((conn) => [conn.id, conn]))
+      const existingConnectionIds = new Set(allConnections.map((conn) => conn.id))
+
       const activeConns = info.connections.map((conn) => {
-        const preConn = activeConnections.find((c) => c.id === conn.id)
+        const preConn = prevActiveMap.get(conn.id)
         const downloadSpeed = preConn ? conn.download - preConn.download : 0
         const uploadSpeed = preConn ? conn.upload - preConn.upload : 0
-        const metadata = {
-          ...conn.metadata,
-          ...(conn.metadata.type == 'Inner' && { process: 'mihomo', processPath: 'mihomo' })
-        }
+        const metadata =
+          conn.metadata.type === 'Inner'
+            ? { ...conn.metadata, process: 'mihomo', processPath: 'mihomo' }
+            : conn.metadata
+
         return {
           ...conn,
           metadata,
@@ -153,21 +174,33 @@ const Connections: React.FC = () => {
         }
       })
 
-      const closedConns = differenceWith(allConns, activeConns, (a, b) => a.id === b.id).map(
-        (conn) => {
-          return {
-            ...conn,
-            isActive: false,
-            downloadSpeed: 0,
-            uploadSpeed: 0
-          }
-        }
+      const newConnections = activeConns.filter(
+        (conn) => !existingConnectionIds.has(conn.id) && !deletedIds.has(conn.id)
       )
 
-      setActiveConnections(activeConns)
-      setClosedConnections(closedConns)
-      setAllConnections(allConns.slice(-(activeConns.length + 200)))
-      cachedConnections = allConnections
+      if (newConnections.length > 0) {
+        const updatedAllConnections = [...allConnections, ...newConnections]
+
+        const activeConnIds = new Set(activeConns.map((conn) => conn.id))
+        const allConns = updatedAllConnections.map((conn) => {
+          const activeConn = activeConns.find((ac) => ac.id === conn.id)
+          return activeConn || { ...conn, isActive: false, downloadSpeed: 0, uploadSpeed: 0 }
+        })
+
+        const closedConns = allConns.filter((conn) => !activeConnIds.has(conn.id))
+
+        setActiveConnections(activeConns)
+        setClosedConnections(closedConns)
+        const finalAllConnections = allConns.slice(-(activeConns.length + 200))
+        setAllConnections(finalAllConnections)
+        cachedConnections = finalAllConnections
+      } else {
+        const activeConnIds = new Set(activeConns.map((conn) => conn.id))
+        const closedConns = allConnections.filter((conn) => !activeConnIds.has(conn.id))
+
+        setActiveConnections(activeConns)
+        setClosedConnections(closedConns)
+      }
     }
 
     window.electron.ipcRenderer.on('mihomoConnections', handleConnections)
@@ -175,7 +208,7 @@ const Connections: React.FC = () => {
     return (): void => {
       window.electron.ipcRenderer.removeAllListeners('mihomoConnections')
     }
-  }, [allConnections, activeConnections, closedConnections])
+  }, [allConnections, activeConnections, closedConnections, deletedIds])
 
   const processAppNameQueue = useCallback(async () => {
     if (processingAppNames.current.size >= 3 || appNameRequestQueue.current.size === 0) return
@@ -266,16 +299,16 @@ const Connections: React.FC = () => {
       if (c.metadata.processPath) visiblePaths.add(c.metadata.processPath)
     })
 
-    activeConnections.forEach((c) => {
-      if (c.metadata.processPath && !visiblePaths.has(c.metadata.processPath)) {
-        otherPaths.add(c.metadata.processPath)
+    const collectPaths = (connections: ControllerConnectionDetail[]) => {
+      for (const c of connections) {
+        if (c.metadata.processPath && !visiblePaths.has(c.metadata.processPath)) {
+          otherPaths.add(c.metadata.processPath)
+        }
       }
-    })
-    closedConnections.forEach((c) => {
-      if (c.metadata.processPath && !visiblePaths.has(c.metadata.processPath)) {
-        otherPaths.add(c.metadata.processPath)
-      }
-    })
+    }
+
+    collectPaths(activeConnections)
+    collectPaths(closedConnections)
 
     const loadIcon = (path: string, isVisible: boolean = false): void => {
       if (iconMap[path] || processingIcons.current.has(path)) return
@@ -283,11 +316,8 @@ const Connections: React.FC = () => {
       const fromStorage = localStorage.getItem(path)
       if (fromStorage) {
         setIconMap((prev) => ({ ...prev, [path]: fromStorage }))
-        if (isVisible) {
-          const firstConnection = filteredConnections[0]
-          if (firstConnection?.metadata.processPath === path) {
-            setFirstItemRefreshTrigger((prev) => prev + 1)
-          }
+        if (isVisible && filteredConnections[0]?.metadata.processPath === path) {
+          setFirstItemRefreshTrigger((prev) => prev + 1)
         }
         return
       }
@@ -302,36 +332,31 @@ const Connections: React.FC = () => {
 
     visiblePaths.forEach((path) => {
       loadIcon(path, true)
-      if (displayAppName) {
-        loadAppName(path)
-      }
-    })
-    otherPaths.forEach((path) => {
-      loadIcon(path, false)
-      if (displayAppName) {
-        loadAppName(path)
-      }
+      if (displayAppName) loadAppName(path)
     })
 
-    if (processIconTimer.current) {
-      clearTimeout(processIconTimer.current)
+    if (otherPaths.size > 0) {
+      const loadOtherPaths = () => {
+        otherPaths.forEach((path) => {
+          loadIcon(path, false)
+          if (displayAppName) loadAppName(path)
+        })
+      }
+
+      setTimeout(loadOtherPaths, 100)
     }
-    processIconTimer.current = setTimeout(processIconQueue, 10)
 
+    if (processIconTimer.current) clearTimeout(processIconTimer.current)
+    if (processAppNameTimer.current) clearTimeout(processAppNameTimer.current)
+
+    processIconTimer.current = setTimeout(processIconQueue, 10)
     if (displayAppName) {
-      if (processAppNameTimer.current) {
-        clearTimeout(processAppNameTimer.current)
-      }
       processAppNameTimer.current = setTimeout(processAppNameQueue, 10)
     }
 
     return (): void => {
-      if (processIconTimer.current) {
-        clearTimeout(processIconTimer.current)
-      }
-      if (processAppNameTimer.current) {
-        clearTimeout(processAppNameTimer.current)
-      }
+      if (processIconTimer.current) clearTimeout(processIconTimer.current)
+      if (processAppNameTimer.current) clearTimeout(processAppNameTimer.current)
     }
   }, [
     activeConnections,
@@ -341,7 +366,9 @@ const Connections: React.FC = () => {
     displayIcon,
     filteredConnections,
     processIconQueue,
-    processAppNameQueue
+    processAppNameQueue,
+    displayAppName,
+    findProcessMode
   ])
 
   const handleTabChange = useCallback((key: Key) => {
@@ -399,7 +426,8 @@ const Connections: React.FC = () => {
       selected,
       closeConnection,
       appNameCache,
-      findProcessMode
+      findProcessMode,
+      displayAppName
     ]
   )
 
@@ -425,7 +453,7 @@ const Connections: React.FC = () => {
           >
             <Button
               className="app-nodrag ml-1"
-              title="关闭全部连接"
+              title={tab === 'active' ? '关闭全部连接' : '清空已关闭连接'}
               isIconOnly
               size="sm"
               variant="light"
